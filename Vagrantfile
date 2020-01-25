@@ -13,6 +13,11 @@ Vagrant.configure("2") do |config|
       libvirt.memory = 512
       libvirt.cpus = 1
     end
+    client.vm.provision "shell", inline: <<-SHELL
+      yum upgrade -y
+      yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+      yum install -y ansible
+    SHELL
   end
 
 end
