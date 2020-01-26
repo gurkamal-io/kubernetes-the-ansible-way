@@ -1,0 +1,16 @@
+all:
+  hosts:
+    kubernetes-the-ansible-way:
+  children:
+    masters:
+      hosts:
+        master-0:
+          ansible_host: 10.0.0.100
+          ansible_connection: ssh
+          ansible_user: vagrant
+          ansible_private_key_file: /vagrant_machines/master-0/libvirt/private_key
+        master-1:
+          ansible_host: 10.0.0.101
+          aansible_connection: ssh
+          ansible_user: vagrant
+          ansible_private_key_file: /vagrant_machines/master-1/libvirt/private_key
