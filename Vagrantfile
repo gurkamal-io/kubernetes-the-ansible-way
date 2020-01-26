@@ -3,7 +3,7 @@
 
 Vagrant.configure("2") do |config|
 
-  # HAProxy loadbalancer
+  # HAProxy Load Balancer
   config.vm.define "load-balancer" do |load_balancer|
     load_balancer.vm.box = "centos/7"
     load_balancer.vm.box_version = "1905.1"
@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
     SHELL
   end
 
-  # Kubernetes Master Nodes / Control Plane
+  # Kubernetes Master Nodes
   MASTER_NODE_COUNT = 3
   (0...(MASTER_NODE_COUNT)).each do |i|
     config.vm.define "master-#{i}" do |master_i|
@@ -53,6 +53,5 @@ Vagrant.configure("2") do |config|
       worker_i.vm.synced_folder ".", "/vagrant", disabled: true
     end
   end
-
 
 end
