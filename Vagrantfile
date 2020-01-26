@@ -3,7 +3,6 @@
 
 Vagrant.configure("2") do |config|
 
-
   # Client machine for ansible and kubectl
   config.vm.define "client" do |client|
     client.vm.box = "centos/7"
@@ -21,7 +20,6 @@ Vagrant.configure("2") do |config|
     SHELL
   end
 
-
   # HAProxy node for load balancing kube-apiserver instances
   config.vm.define "haproxy" do |haproxy|
     haproxy.vm.box = "centos/7"
@@ -35,6 +33,22 @@ Vagrant.configure("2") do |config|
     end
     haproxy.vm.synced_folder ".", "/vagrant", disabled: true
   end
-
+  
+  # Kubernetes Master Nodes / Control Plane
+  MASTER_NODE_COUNT = 3
+  (0...(MASTER_NODE_COUNT - 1)).each do |i|
+    config.vm.define "master-#{i}" do |master|
+      master.vm.box = "centos/7"
+      master.vm.box_version = "1905.1"
+      master.vm.hostname = "master#{i}"
+      master.vm.network "private_network", type: "dhcp"
+      master.vm.provider "libvirt" do |libvirt|
+        libvirt.qemu_use_session = false
+        libvirt.memory = 2048
+        libvirt.cpus = 1
+      end
+      master.vm.synced_folder ".", "/vagrant", disabled: true
+    end
+  end
 
 end
