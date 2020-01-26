@@ -22,6 +22,9 @@ Vagrant.configure("2") do |config|
         libvirt.cpus = 1
       end
       haproxy_i.vm.synced_folder ".", "/vagrant", disabled: true
+      if i == 0
+        haproxy_i.vm.synced_folder "./.vagrant/machines", "/vagrant_machines", disabled: false
+      end
     end
   end
 
