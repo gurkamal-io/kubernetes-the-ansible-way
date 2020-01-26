@@ -3,21 +3,20 @@
 
 Vagrant.configure("2") do |config|
 
-  # HAProxy Load Balancer
-  config.vm.define "load-balancer" do |load_balancer|
-    load_balancer.vm.box = "centos/7"
-    load_balancer.vm.box_version = "1905.1"
-    load_balancer.vm.hostname = "load-balancer"
-    load_balancer.vm.network "private_network", type: "dhcp"
-    load_balancer.vm.provider "libvirt" do |libvirt|
-      libvirt.qemu_use_session = false
-      libvirt.memory = 2048
-      libvirt.cpus = 1
+  # HAProxy Nodes (Active/Standby High Availability)
+  LOAD_BALANCER_COUNT = 2
+  (0...(LOAD_BALANCER_COUNT)).each do |i|
+    config.vm.define "haproxy-#{i}" do |haproxy_i|
+      haproxy_i.vm.box = "centos/7"
+      haproxy_i.vm.box_version = "1905.1"
+      haproxy_i.vm.hostname = "haproxy-#{i}"
+      haproxy_i.vm.network "private_network", type: "dhcp"
+      haproxy_i.vm.provider "libvirt" do |libvirt|
+        libvirt.qemu_use_session = false
+        libvirt.memory = 1024
+        libvirt.cpus = 1
+      end
     end
-    load_balancer.vm.provision "shell", inline: <<-SHELL
-      yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-      yum install -y ansible
-    SHELL
   end
 
   # Kubernetes Master Nodes
