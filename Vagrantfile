@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
     client.vm.network "private_network", type: "dhcp"
     client.vm.provider "libvirt" do |libvirt|
       libvirt.qemu_use_session = false
-      libvirt.memory = 512
+      libvirt.memory = 1024
       libvirt.cpus = 1
     end
     client.vm.provision "shell", inline: <<-SHELL
@@ -22,18 +22,18 @@ Vagrant.configure("2") do |config|
   end
 
 
-  # Load Balancer
-  config.vm.define "load-balancer" do |node|
-    node.vm.box = "centos/7"
-    node.vm.box_version = "1905.1"
-    node.vm.hostname = "load-balancer"
-    node.vm.network "private_network", type: "dhcp"
-    node.vm.provider "libvirt" do |libvirt|
+  # HAProxy node for load balancing kube-apiserver instances
+  config.vm.define "haproxy" do |haproxy|
+    haproxy.vm.box = "centos/7"
+    haproxy.vm.box_version = "1905.1"
+    haproxy.vm.hostname = "haproxy"
+    haproxy.vm.network "private_network", type: "dhcp"
+    haproxy.vm.provider "libvirt" do |libvirt|
       libvirt.qemu_use_session = false
       libvirt.memory = 1024
       libvirt.cpus = 1
     end
-    node.vm.synced_folder ".", "/vagrant", disabled: true
+    haproxy.vm.synced_folder ".", "/vagrant", disabled: true
   end
 
 
