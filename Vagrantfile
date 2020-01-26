@@ -37,4 +37,22 @@ Vagrant.configure("2") do |config|
     end
   end
 
+  # Kubernetes Worker Nodes
+  WORKER_NODE_COUNT = 3
+  (0...(WORKER_NODE_COUNT)).each do |i|
+    config.vm.define "worker-#{i}" do |worker|
+      worker.vm.box = "centos/7"
+      worker.vm.box_version = "1905.1"
+      worker.vm.hostname = "worker-#{i}"
+      worker.vm.network "private_network", type: "dhcp"
+      worker.vm.provider "libvirt" do |libvirt|
+        libvirt.qemu_use_session = false
+        libvirt.memory = 2048
+        libvirt.cpus = 1
+      end
+      worker.vm.synced_folder ".", "/vagrant", disabled: true
+    end
+  end
+
+
 end
