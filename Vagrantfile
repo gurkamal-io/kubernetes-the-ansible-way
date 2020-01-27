@@ -10,7 +10,7 @@ Vagrant.configure("2") do |config|
 
   # Private Network Subnet for all Nodes
   SUBNET_PREFIX = "10.0.0" # 10.0.0.0/24 private network
-  VIRTUAL_NETWORK_NAME = "kubernetes"
+  VIRTUAL_NETWORK_NAME = "kubernetes-the-ansible-way"
 
   # HAProxy Node Specs
   LOAD_BALANCER_COUNT = 2 # active/passive HA with keepalived
