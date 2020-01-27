@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
   MASTER_NODE_CPUS = 2
 
   # Kubernetes Worker Node Specs
-  WORKER_NODE_COUNT = 4
+  WORKER_NODE_COUNT = 3
   WORKER_NODE_MEMORY = 2048
   WORKER_NODE_CPUS = 1
 
