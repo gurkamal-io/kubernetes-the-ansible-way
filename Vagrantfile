@@ -66,8 +66,8 @@ Vagrant.configure("2") do |config|
         libvirt.cpus = MASTER_NODE_CPUS
       end
       master_i.vm.provider "virtualbox" do |virtualbox|
-        virtualbox.memory = LOAD_BALANCER_MEMORY
-        virtualbox.cpus = LOAD_BALANCER_CPUS
+        virtualbox.memory = MASTER_NODE_MEMORY
+        virtualbox.cpus = MASTER_NODE_CPUS
       end
       master_i.vm.synced_folder ".", "/vagrant", disabled: true
     end
@@ -89,8 +89,8 @@ Vagrant.configure("2") do |config|
         libvirt.cpus = WORKER_NODE_CPUS
       end
       worker_i.vm.provider "virtualbox" do |virtualbox|
-        virtualbox.memory = LOAD_BALANCER_MEMORY
-        virtualbox.cpus = LOAD_BALANCER_CPUS
+        virtualbox.memory = WORKER_NODE_MEMORY
+        virtualbox.cpus = WORKER_NODE_CPUS
       end
       worker_i.vm.synced_folder ".", "/vagrant", disabled: true
     end
