@@ -13,19 +13,19 @@ Vagrant.configure("2") do |config|
   VIRTUAL_NETWORK_NAME = "kubernetes"
 
   # HAProxy Node Specs
-  LOAD_BALANCER_COUNT = 0 # active/passive HA with keepalived
+  LOAD_BALANCER_COUNT = 2 # active/passive HA with keepalived
   LOAD_BALANCER_MEMORY = 2048
   LOAD_BALANCER_CPUS = 1
 
   # Kubernetes Master Node Specs
-  MASTER_NODE_COUNT = 0 # should an be odd number for etcd quorum
+  MASTER_NODE_COUNT = 3 # should an be odd number for etcd quorum
   MASTER_NODE_MEMORY = 4096 # atleast 2048
   MASTER_NODE_CPUS = 2 # atleast 2
 
   # Kubernetes Worker Node Specs
   WORKER_NODE_COUNT = 4 
   WORKER_NODE_MEMORY = 4096 # atleast 1024
-  WORKER_NODE_CPUS = 2 # atleast 1
+  WORKER_NODE_CPUS = 1 # atleast 1
 
   # HAProxy Nodes (Active/Standby High Availability)
   (0...(LOAD_BALANCER_COUNT)).each do |i|
