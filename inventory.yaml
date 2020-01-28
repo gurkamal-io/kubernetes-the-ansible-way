@@ -1,50 +1,19 @@
 all:
   children:
+    loadbalancers:
+      hosts:
+        haproxy0:
+        haproxy1:
     kubernetes:
       children:
-        masters:
-          hosts:
+        master_nodes:
+          hosts: 
             master-0:
-              ansible_host: 10.0.0.100
-              ansible_connection: ssh
-              ansible_user: vagrant
-              ansible_private_key_file: .vagrant/machines/master-0/libvirt/private_key
             master-1:
-              ansible_host: 10.0.0.101
-              aansible_connection: ssh
-              ansible_user: vagrant
-              ansible_private_key_file: .vagrant/machines/master-1/libvirt/private_key
             master-2:
-              ansible_host: 10.0.0.102
-              aansible_connection: ssh
-              ansible_user: vagrant
-              ansible_private_key_file: .vagrant/machines/master-2/libvirt/private_key
         workers:
           hosts:
             worker-0:
-              ansible_host: 10.0.0.200
-              ansible_connection: ssh
-              ansible_user: vagrant
-              ansible_private_key_file: .vagrant/machines/worker-0/libvirt/private_key
             worker-1:
-              ansible_host: 10.0.0.201
-              aansible_connection: ssh
-              ansible_user: vagrant
-              ansible_private_key_file: .vagrant/machines/worker-1/libvirt/private_key
             worker-2:
-              ansible_host: 10.0.0.202
-              aansible_connection: ssh
-              ansible_user: vagrant
-              ansible_private_key_file: .vagrant/machines/worker-2/libvirt/private_key
-    loadbalancers:
-      hosts:
-        haproxy-0:
-          ansible_host: 10.0.0.50
-          ansible_connection: ssh
-          ansible_user: vagrant
-          ansible_private_key_file: .vagrant/machines/haproxy-0/libvirt/private_key
-        haproxy-1:
-          ansible_host: 10.0.0.51
-          aansible_connection: ssh
-          ansible_user: vagrant
-          ansible_private_key_file: .vagrant/machines/haproxy-1/libvirt/private_key
+            worker-3:
