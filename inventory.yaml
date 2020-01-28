@@ -1,6 +1,6 @@
 all:
   children:
-    loadbalancers:
+    load_balancers:
       hosts:
         haproxy0:
         haproxy1:
@@ -11,7 +11,7 @@ all:
             master0:
             master1:
             master2:
-        workers:
+        worker_nodes:
           hosts:
             worker0:
             worker1:
