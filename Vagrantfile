@@ -29,10 +29,10 @@ Vagrant.configure("2") do |config|
 
   # HAProxy Nodes (Active/Standby High Availability)
   (0...(LOAD_BALANCER_COUNT)).each do |i|
-    config.vm.define "haproxy-#{i}" do |haproxy_i|
+    config.vm.define "haproxy#{i}" do |haproxy_i|
       haproxy_i.vm.box = "centos/7"
       haproxy_i.vm.box_version = "1905.1"
-      haproxy_i.vm.hostname = "haproxy-#{i}"
+      haproxy_i.vm.hostname = "haproxy#{i}"
       haproxy_i.vm.network "private_network",
         ip: "#{SUBNET_PREFIX}.#{50 + i}",
         libvirt__network_name: VIRTUAL_NETWORK_NAME,
@@ -52,10 +52,10 @@ Vagrant.configure("2") do |config|
 
   # Kubernetes Master Nodes
   (0...(MASTER_NODE_COUNT)).each do |i|
-    config.vm.define "master-#{i}" do |master_i|
+    config.vm.define "master#{i}" do |master_i|
       master_i.vm.box = "centos/7"
       master_i.vm.box_version = "1905.1"
-      master_i.vm.hostname = "master-#{i}"
+      master_i.vm.hostname = "master#{i}"
       master_i.vm.network "private_network", 
         ip: "#{SUBNET_PREFIX}.#{100 + i}",
         libvirt__network_name: VIRTUAL_NETWORK_NAME,
@@ -75,10 +75,10 @@ Vagrant.configure("2") do |config|
 
   # Kubernetes Worker Nodes
   (0...(WORKER_NODE_COUNT)).each do |i|
-    config.vm.define "worker-#{i}" do |worker_i|
+    config.vm.define "worker#{i}" do |worker_i|
       worker_i.vm.box = "centos/7"
       worker_i.vm.box_version = "1905.1"
-      worker_i.vm.hostname = "worker-#{i}"
+      worker_i.vm.hostname = "worker#{i}"
       worker_i.vm.network "private_network", 
         ip: "#{SUBNET_PREFIX}.#{200 + i}",
         libvirt__network_name: VIRTUAL_NETWORK_NAME,
