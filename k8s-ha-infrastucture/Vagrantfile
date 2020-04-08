@@ -2,7 +2,6 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-
   ################################################################################
   # Tested on Vagrant Host with Following Specs
   ################################################################################
@@ -11,6 +10,7 @@ Vagrant.configure("2") do |config|
   # Provider = libvirt
   # CPUs:    = 12 x 2.60GHz - Intel® Core™ i7-8850H CPU @ 2.60GHz × 12 
   # RAM:     = 64GB Total
+
 
   ################################################################################
   # Cluster Architecture (Provisioned on Virtual Private Network 10.0.0.0/24)
@@ -27,6 +27,7 @@ Vagrant.configure("2") do |config|
   # 10.0.0.201  |  worker-1    |  kubernetes worker node
   # 10.0.0.202  |  worker-2    |  kubernetes worker node
 
+  
   ################################################################################
   # Configuration
   ################################################################################
