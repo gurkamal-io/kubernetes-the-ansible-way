@@ -17,7 +17,7 @@ Vagrant.configure("2") do |config|
   ################################################################################
   # IP          |  Node    
   # --------------------------------------------------------------------------
-  # 10.0.0.10   |  Virtual IP  |  HA Failover across haproxy-0 and haproxy-1
+  # 10.0.0.10   |  Virtual IP  |  HA Load Balancer (using keepalived)
   # 10.0.0.50   |  haproxy-0   |  Active Load Balancer for kubernetes
   # 10.0.0.51   |  haproxy-1   |  Backup Load Balancer for kubernetes
   # 10.0.0.100  |  master-0    |  kubernetes master and etcd node
@@ -45,8 +45,10 @@ Vagrant.configure("2") do |config|
   SUBNET_PREFIX        = "10.0.0" # 10.0.0.0/24 private network
   VIRTUAL_NETWORK_NAME = "kubernetes"
 
+  # Load Balancer Endpoint
+  LOAD_BALANCER_VIRTUAL_IP     = "#{SUBNET_PREFIX}.10" # Kubernetes Load Balancer
+
   # HAProxy Load Balancers
-  HAPROXY_KEEPALIVED_VIP       = "#{SUBNET_PREFIX}.10" # Kubernetes Load Balancer
   HAPROXY_NODE_HOSTNAME_PREFIX = "haproxy-"
   HAPROXY_NODE_SUBNET_SUFFIX   = 50 # 10.0.0.50 series
   HAPROXY_NODE_COUNT           = 2 # HA load balancer by using a VIP with keepalived
@@ -144,18 +146,21 @@ Vagrant.configure("2") do |config|
 
 
   ################################################################################
-  # DNS Resolution and SSH Access - Note: Vagrant runs scripts as root
+  # Enable Ansible SSH access -- Note: Vagrant runs scripts as root
   ################################################################################
-  $bootstrap_dns_and_ssh= <<-'SCRIPT'
+  $dns_and_ssh_for_ansible= <<-'SCRIPT'
     #!/bin/bash
     PROVIDER="${1}";            VAGRANT_FILE_PATH="${2}";             SUBNET_PREFIX="${3}";
     HAPROXY_NODE_COUNT="${4}";  HAPROXY_NODE_HOSTNAME_PREFIX="${5}";  HAPROXY_NODE_SUBNET_SUFFIX="${6}";
     MASTER_NODE_COUNT="${7}";   MASTER_NODE_HOSTNAME_PREFIX="${8}";   MASTER_NODE_SUBNET_SUFFIX="${9}";
     WORKER_NODE_COUNT="${10}";  WORKER_NODE_HOSTNAME_PREFIX="${11}";  WORKER_NODE_SUBNET_SUFFIX="${12}";
+    LOAD_BALANCER_VIRTUAL_IP="${13}"
 
     # generate ssh keypair
     runuser -l vagrant -c "ssh-keygen -q -t rsa -N '' -f /home/vagrant/.ssh/id_rsa 2>/dev/null <<< y >/dev/null"
     readonly PUB_KEY="$(cat /home/vagrant/.ssh/id_rsa.pub)"
+
+    echo "${LOAD_BALANCER_VIRTUAL_IP} ${load-balancer}" >> "/etc/hosts"
 
     # args: <count> <hostname_prefix> <subnet_suffix>
     bootstrap_node_type() {
@@ -194,21 +199,22 @@ Vagrant.configure("2") do |config|
     bootstrap_node_type "${WORKER_NODE_COUNT}"  "${WORKER_NODE_HOSTNAME_PREFIX}"  "${WORKER_NODE_SUBNET_SUFFIX}"
     rm -rf "${VAGRANT_FILE_PATH}"
 
-    yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm -y
-    yum install ansible -y
+    # Ansible (can be run from any node)
+    yum install -y "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+    yum install -y "ansible"
     yum update -y
     /sbin/shutdown -r
   SCRIPT
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.provision "file", source: ".vagrant", destination: VAGRANT_FILE_PATH
-  config.vm.provision "bootstrap_dns_and_ssh", type: "shell" do |s|
-    s.inline = $bootstrap_dns_and_ssh
+  config.vm.provision "dns_and_ssh_for_ansible", type: "shell" do |s|
+    s.inline = $dns_and_ssh_for_ansible
     s.args = [
       PROVIDER,           VAGRANT_FILE_PATH,            SUBNET_PREFIX,
       HAPROXY_NODE_COUNT, HAPROXY_NODE_HOSTNAME_PREFIX, HAPROXY_NODE_SUBNET_SUFFIX,
       MASTER_NODE_COUNT,  MASTER_NODE_HOSTNAME_PREFIX,  MASTER_NODE_SUBNET_SUFFIX,
-      WORKER_NODE_COUNT,  WORKER_NODE_HOSTNAME_PREFIX,  WORKER_NODE_SUBNET_SUFFIX
-    ]
+      WORKER_NODE_COUNT,  WORKER_NODE_HOSTNAME_PREFIX,  WORKER_NODE_SUBNET_SUFFIX,
+      LOAD_BALANCER_VIRTUAL_IP   ]
   end
 end
