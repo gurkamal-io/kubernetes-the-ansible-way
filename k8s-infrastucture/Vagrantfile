@@ -2,7 +2,6 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-
   ################################################################################
   # Tested on Vagrant Host with Following Specs
   ################################################################################
@@ -12,20 +11,17 @@ Vagrant.configure("2") do |config|
   # CPUs:    = 12 x 2.60GHz - Intel® Core™ i7-8850H CPU @ 2.60GHz × 12 
   # RAM:     = 64GB Total
 
+
   ################################################################################
   # Cluster Architecture (Provisioned on Virtual Private Network 10.0.0.0/24)
   ################################################################################
-  # IP          |  Node    
+  # IP          |  Node        |  Purpose
   # --------------------------------------------------------------------------
-  # 10.0.0.10   |  Virtual IP  |  HA Load Balancer (using keepalived)
-  # 10.0.0.50   |  haproxy-0   |  Active Load Balancer for kubernetes
-  # 10.0.0.51   |  haproxy-1   |  Backup Load Balancer for kubernetes
   # 10.0.0.100  |  master-0    |  kubernetes master and etcd node
-  # 10.0.0.101  |  master-1    |  kubernetes master and etcd node
-  # 10.0.0.102  |  master-2    |  kubernetes master and etcd node
   # 10.0.0.200  |  worker-0    |  kubernetes worker node
   # 10.0.0.201  |  worker-1    |  kubernetes worker node
   # 10.0.0.202  |  worker-2    |  kubernetes worker node
+
 
   ################################################################################
   # Configuration
@@ -45,20 +41,10 @@ Vagrant.configure("2") do |config|
   SUBNET_PREFIX        = "10.0.0" # 10.0.0.0/24 private network
   VIRTUAL_NETWORK_NAME = "kubernetes"
 
-  # Load Balancer Endpoint
-  LOAD_BALANCER_VIRTUAL_IP     = "#{SUBNET_PREFIX}.10" # Kubernetes Load Balancer
-
-  # HAProxy Load Balancers
-  HAPROXY_NODE_HOSTNAME_PREFIX = "haproxy-"
-  HAPROXY_NODE_SUBNET_SUFFIX   = 50 # 10.0.0.50 series
-  HAPROXY_NODE_COUNT           = 2 # HA load balancer by using a VIP with keepalived
-  HAPROXY_NODE_MEMORY          = 1024 # atleast 512
-  HAPROXY_NODE_CPUS            = 1 # atleast 1
-
   # Kubernetes Masters
   MASTER_NODE_HOSTNAME_PREFIX  = "master-"
   MASTER_NODE_SUBNET_SUFFIX    = 100 # 10.0.0.100 series
-  MASTER_NODE_COUNT            = 3 # should an be odd number for etcd quorum
+  MASTER_NODE_COUNT            = 1 # should an be odd number for etcd quorum
   MASTER_NODE_MEMORY           = 4096 # atleast 1024
   MASTER_NODE_CPUS             = 2 # atleast 1
 
@@ -66,33 +52,8 @@ Vagrant.configure("2") do |config|
   WORKER_NODE_HOSTNAME_PREFIX  = "worker-"
   WORKER_NODE_SUBNET_SUFFIX    = 200 # 10.0.0.200 series
   WORKER_NODE_COUNT            = 3
-  WORKER_NODE_MEMORY           = 4096 # atleast 1024
-  WORKER_NODE_CPUS             = 2 # atleast 1
-
-
-  ################################################################################
-  # HAProxy Load Balancers (Active/Standby High Availability)
-  ################################################################################
-  (0...(HAPROXY_NODE_COUNT)).each do |i|
-    config.vm.define "#{HAPROXY_NODE_HOSTNAME_PREFIX}#{i}" do |haproxy_i|
-      haproxy_i.vm.box = VAGRANT_BOX
-      haproxy_i.vm.box_version = VAGRANT_BOX_VERSION
-      haproxy_i.vm.hostname = "#{HAPROXY_NODE_HOSTNAME_PREFIX}#{i}"
-      haproxy_i.vm.network "private_network",
-        ip: "#{SUBNET_PREFIX}.#{HAPROXY_NODE_SUBNET_SUFFIX + i}",
-        libvirt__network_name: VIRTUAL_NETWORK_NAME,
-        virtualbox__intnet: VIRTUAL_NETWORK_NAME
-      haproxy_i.vm.provider "libvirt" do |libvirt|
-        libvirt.qemu_use_session = false
-        libvirt.memory = HAPROXY_NODE_MEMORY
-        libvirt.cpus = HAPROXY_NODE_CPUS
-      end
-      haproxy_i.vm.provider "virtualbox" do |virtualbox|
-        virtualbox.memory = HAPROXY_NODE_MEMORY 
-        virtualbox.cpus = HAPROXY_NODE_CPUS
-      end
-    end
-  end
+  WORKER_NODE_MEMORY           = 8192 # atleast 1024
+  WORKER_NODE_CPUS             = 3 # atleast 1
 
 
   ################################################################################
@@ -151,16 +112,12 @@ Vagrant.configure("2") do |config|
   $dns_and_ssh_for_ansible= <<-'SCRIPT'
     #!/bin/bash
     PROVIDER="${1}";            VAGRANT_FILE_PATH="${2}";             SUBNET_PREFIX="${3}";
-    HAPROXY_NODE_COUNT="${4}";  HAPROXY_NODE_HOSTNAME_PREFIX="${5}";  HAPROXY_NODE_SUBNET_SUFFIX="${6}";
-    MASTER_NODE_COUNT="${7}";   MASTER_NODE_HOSTNAME_PREFIX="${8}";   MASTER_NODE_SUBNET_SUFFIX="${9}";
-    WORKER_NODE_COUNT="${10}";  WORKER_NODE_HOSTNAME_PREFIX="${11}";  WORKER_NODE_SUBNET_SUFFIX="${12}";
-    LOAD_BALANCER_VIRTUAL_IP="${13}"
+    MASTER_NODE_COUNT="${4}";   MASTER_NODE_HOSTNAME_PREFIX="${5}";   MASTER_NODE_SUBNET_SUFFIX="${6}";
+    WORKER_NODE_COUNT="${7}";   WORKER_NODE_HOSTNAME_PREFIX="${8}";   WORKER_NODE_SUBNET_SUFFIX="${9}";
 
     # generate ssh keypair
     runuser -l vagrant -c "ssh-keygen -q -t rsa -N '' -f /home/vagrant/.ssh/id_rsa 2>/dev/null <<< y >/dev/null"
     readonly PUB_KEY="$(cat /home/vagrant/.ssh/id_rsa.pub)"
-
-    echo "${LOAD_BALANCER_VIRTUAL_IP} ${load-balancer}" >> "/etc/hosts"
 
     # args: <count> <hostname_prefix> <subnet_suffix>
     bootstrap_node_type() {
@@ -194,7 +151,6 @@ Vagrant.configure("2") do |config|
       done
     }
 
-    bootstrap_node_type "${HAPROXY_NODE_COUNT}" "${HAPROXY_NODE_HOSTNAME_PREFIX}" "${HAPROXY_NODE_SUBNET_SUFFIX}"
     bootstrap_node_type "${MASTER_NODE_COUNT}"  "${MASTER_NODE_HOSTNAME_PREFIX}"  "${MASTER_NODE_SUBNET_SUFFIX}"
     bootstrap_node_type "${WORKER_NODE_COUNT}"  "${WORKER_NODE_HOSTNAME_PREFIX}"  "${WORKER_NODE_SUBNET_SUFFIX}"
     rm -rf "${VAGRANT_FILE_PATH}"
@@ -212,9 +168,8 @@ Vagrant.configure("2") do |config|
     s.inline = $dns_and_ssh_for_ansible
     s.args = [
       PROVIDER,           VAGRANT_FILE_PATH,            SUBNET_PREFIX,
-      HAPROXY_NODE_COUNT, HAPROXY_NODE_HOSTNAME_PREFIX, HAPROXY_NODE_SUBNET_SUFFIX,
       MASTER_NODE_COUNT,  MASTER_NODE_HOSTNAME_PREFIX,  MASTER_NODE_SUBNET_SUFFIX,
-      WORKER_NODE_COUNT,  WORKER_NODE_HOSTNAME_PREFIX,  WORKER_NODE_SUBNET_SUFFIX,
-      LOAD_BALANCER_VIRTUAL_IP   ]
+      WORKER_NODE_COUNT,  WORKER_NODE_HOSTNAME_PREFIX,  WORKER_NODE_SUBNET_SUFFIX
+    ]
   end
 end
