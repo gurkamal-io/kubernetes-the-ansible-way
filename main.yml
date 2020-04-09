@@ -1,4 +1,9 @@
 ---
+- name: Disable SELinux (not friendly with kubernetes)
+  hosts: kubernetes
+  selinux:
+    state: disabled
+
 - name: install docker cluster-wide as the container runtime
   hosts: master_nodes, worker_nodes
   become: true
