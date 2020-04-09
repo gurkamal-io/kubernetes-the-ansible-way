@@ -4,7 +4,7 @@
   hosts: kubernetes
   tasks:
     - selinux:
-      state: disabled
+        state: disabled
 
 - name: install docker cluster-wide as the container runtime
   hosts: master_nodes, worker_nodes
