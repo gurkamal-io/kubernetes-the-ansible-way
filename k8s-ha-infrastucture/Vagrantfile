@@ -158,7 +158,8 @@ Vagrant.configure("2") do |config|
     LOAD_BALANCER_VIRTUAL_IP="${13}"
 
     # generate ssh keypair
-    runuser -l vagrant -c "ssh-keygen -q -t rsa -N '' -f /home/vagrant/.ssh/id_rsa 2>/dev/null <<< y >/dev/null"
+    runuser -l vagrant -c "ssh-keygen -q -t rsa -N '' -f /home/vagrant/.ssh/id_rsa 2>/dev/null <<< y >/dev/null" && \
+    echo "generated new ssh keypair"
     readonly PUB_KEY="$(cat /home/vagrant/.ssh/id_rsa.pub)"
 
     echo "${LOAD_BALANCER_VIRTUAL_IP} ${load-balancer}" >> "/etc/hosts"
@@ -181,28 +182,34 @@ Vagrant.configure("2") do |config|
         vagrant_key_exists="false"
 
         while [[ "${vagrant_key_exists}" == "false" ]]; do
+          echo "waiting for ${hostname_i}'s vagrant_ssh_key"
           if [[ -f "${vagrant_ssh_key}" ]]; then
-            vagrant_key_exists="true"
+            vagrant_key_exists="true" && \
+            echo "${hostname_i}'s vagrant_ssh_key found"
           fi
         done
 
-        echo "${ip_address_i} ${hostname_i}" >> "/etc/hosts"
+        echo "${ip_address_i} ${hostname_i}" >> "/etc/hosts" && \
+        echo "enabled DNS for ${ip_address_i} ${hostname_i}"
         ssh \
           -o "StrictHostKeyChecking=no" \
           -i "${vagrant_ssh_key}" \
           "vagrant@${ip_address_i}" \
-          "echo ${PUB_KEY} >> /home/vagrant/.ssh/authorized_keys"
+          "echo ${PUB_KEY} >> /home/vagrant/.ssh/authorized_keys" && \
+        echo "installed new ssh public key on ${hostname_i}"
       done
     }
 
     bootstrap_node_type "${HAPROXY_NODE_COUNT}" "${HAPROXY_NODE_HOSTNAME_PREFIX}" "${HAPROXY_NODE_SUBNET_SUFFIX}"
     bootstrap_node_type "${MASTER_NODE_COUNT}"  "${MASTER_NODE_HOSTNAME_PREFIX}"  "${MASTER_NODE_SUBNET_SUFFIX}"
     bootstrap_node_type "${WORKER_NODE_COUNT}"  "${WORKER_NODE_HOSTNAME_PREFIX}"  "${WORKER_NODE_SUBNET_SUFFIX}"
-    rm -rf "${VAGRANT_FILE_PATH}"
+    rm -rf "${VAGRANT_FILE_PATH}" && \
+    echo "deleted ${VAGRANT_FILE_PATH}"
 
     # Ansible (can be run from any node)
     yum install -y "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
-    yum install -y "ansible"
+    yum install -y "ansible" && \
+    echo "Ansible installed -- $(ansible --version | head -n 1)"
     yum update -y
     /sbin/shutdown -r
   SCRIPT
