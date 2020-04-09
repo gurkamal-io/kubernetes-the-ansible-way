@@ -1,7 +1,7 @@
 ---
 # handlers file for haproxy
-- name: restart docker
+- name: restart haproxy
   systemd:
-    name: docker
+    name: haproxy
     state: restarted
     enabled: yes
