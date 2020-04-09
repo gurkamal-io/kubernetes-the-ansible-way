@@ -1,2 +1,10 @@
 ---
 # tasks file for haproxy
+
+- name: setup haproxy for kubernetes in /etc/haproxy/haproxy.cfg
+  template:
+    src: daemon.json.j2
+    dest: /home/vagrant/test.cfg
+    owner: vagrant
+    group: vagrant
+    mode: "0644"

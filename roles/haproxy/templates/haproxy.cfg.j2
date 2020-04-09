@@ -1,7 +1,6 @@
 
 {% for load_balancer in load_balancers %}
 
-
 frontend {{ load_balancer.name }}
     bind *:{{ load_balancer.listener_port }}
     mode tcp
@@ -11,8 +10,11 @@ backend {{ load_balancer.name }}
     mode tcp
     balance roundrobin
     option tcp-check
-    {% for node in groups.{{ load_balancer.target_group }} %}
-    server master-1 192.168.5.11:{{ load_balancer.target_port }} check fall 3 rise 2
+
+    {% for hostname in groups.{{ load_balancer.target_group }} %}
+    server {{ hostname }} {{ hostvars.{{ hostname }}.ansible_host }}:{{ load_balancer.target_port }} check fall 3 rise 2
     {% endfor %}
+
+
 {% endfor %}
 
