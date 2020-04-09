@@ -1,8 +1,10 @@
 ---
+# Temp placeholder - will move to roles later
 - name: Disable SELinux (not friendly with kubernetes)
   hosts: kubernetes
-  selinux:
-    state: disabled
+  tasks:
+    - selinux:
+      state: disabled
 
 - name: install docker cluster-wide as the container runtime
   hosts: master_nodes, worker_nodes
