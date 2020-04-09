@@ -1,7 +1,18 @@
----
-- hosts: 
-  - master_nodes
-  - worker_nodes
-  become: true
-  roles:
-    - docker
+# ---
+# - hosts:
+#     - master_nodes
+#     - worker_nodes
+#   become: true
+#   roles:
+#     - docker
+
+# - hosts:
+#     - haproxy_nodes
+#   become: true
+#   roles:
+#     - haproxy
+
+- name: Display all variables/facts known for a host
+  debug:
+    var: hostvars
+    # verbosity: 4
