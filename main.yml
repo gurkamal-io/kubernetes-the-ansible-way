@@ -17,5 +17,5 @@
   tasks:
     - name: Display all variables/facts known for a host
       debug:
-        var: hostvars
+        var: groups
         # verbosity: 4
