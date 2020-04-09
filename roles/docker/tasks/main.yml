@@ -1,17 +1,17 @@
 ---
 # tasks file for docker
 
-- name: Install required packages for Docker CE (yum-utils, device-mapper-persistent-data, lvm2)
+- name: install required packages for docker-ce
   yum:
     name: "{{ packages }}"
     state: latest
   vars:
     packages:
-    - yum-utils
-    - device-mapper-persistent-data
-    - lvm2
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
 
-- name: Add Docker-CE stable repo
+- name: add docker-ce-stable repo
   yum_repository:
     name: docker-ce-stable
     description: Docker CE Stable Repo
@@ -19,21 +19,21 @@
     gpgkey: https://download.docker.com/linux/centos/gpg
     gpgcheck: yes
 
-- name: Install Docker CE 19.3.8 for Kubernetes
+- name: install docker-ce 19.3.8 for kubernetes
   yum:
     name: "{{ packages }}"
     state: latest
   vars:
     packages:
-    - containerd.io-1.2.13
-    - docker-ce-19.03.8
-    - docker-ce-cli-19.03.8
+      - containerd.io-1.2.13
+      - docker-ce-19.03.8
+      - docker-ce-cli-19.03.8
 
-- name: Create /etc/docker directory
+- name: create /etc/docker directory
   file:
     path: /etc/docker
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: setup docker daemon for kubernetes in /etc/docker/daemon.json
   template:
@@ -41,9 +41,9 @@
     dest: /etc/docker/daemon.json
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify:
-     - restart docker
+    - restart docker
 
 - name: make sure docker is running
   service:

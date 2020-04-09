@@ -1,10 +1,12 @@
 ---
-- hosts: master_nodes, worker_nodes
+- name: install docker cluster-wide as the container runtime
+  hosts: master_nodes, worker_nodes
   become: true
   roles:
     - docker
 
-- hosts: haproxy_nodes
+- name: bootstrap haproxy nodes
+  hosts: haproxy_nodes
   become: true
   roles:
     - haproxy
