@@ -214,7 +214,7 @@ Vagrant.configure("2") do |config|
     /sbin/shutdown -r
   SCRIPT
 
-  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder "./", "/vagrant", disabled: true
   config.vm.provision "file", source: ".vagrant", destination: VAGRANT_FILE_PATH
   config.vm.provision "dns_and_ssh_for_ansible", type: "shell" do |s|
     s.inline = $dns_and_ssh_for_ansible
