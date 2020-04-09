@@ -12,7 +12,10 @@
 #   roles:
 #     - haproxy
 
-- name: Display all variables/facts known for a host
-  debug:
-    var: hostvars
-    # verbosity: 4
+- hosts: haproxy-1
+  become: true
+  tasks:
+    - name: Display all variables/facts known for a host
+      debug:
+        var: hostvars
+        # verbosity: 4
