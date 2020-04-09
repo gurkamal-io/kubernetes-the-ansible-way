@@ -1,13 +1,10 @@
 ---
-- hosts:
-    - master_nodes
-    - worker_nodes
+- hosts: master_nodes, worker_nodes
   become: true
   roles:
     - docker
 
-- hosts:
-    - haproxy_nodes
+- hosts: haproxy_nodes
   become: true
   roles:
     - haproxy

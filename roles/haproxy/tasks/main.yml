@@ -5,10 +5,18 @@
   yum:
     name: haproxy
     state: latest
-# - name: setup haproxy for kubernetes in /etc/haproxy/haproxy.cfg
-#   template:
-#     src: haproxy.cfg.j2
-#     dest: /etc/haproxy/haproxy.cfg
-#     owner: root
-#     group: root
-#     mode: "0644"
+
+- name: configure haproxy for kubernetes in /etc/haproxy/haproxy.cfg
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - restart haproxy
+
+- name: make sure haproxy is running
+  service:
+    name: haproxy
+    state: started
