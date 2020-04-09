@@ -29,13 +29,31 @@
     - docker-ce-19.03.8
     - docker-ce-cli-19.03.8
 
-- name: Setup Docker Daemon for Kubernetes
+- name: Create /etc/docker directory
+  file:
+    path: /etc/some_directory
+    state: directory
+    mode: '0755'
+
+- name: setup docker daemon for kubernetes in /etc/docker/daemon.json
   template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
     owner: root
     group: root
     mode: '0644'
+  notify:
+     - restart docker
+
+- name: make sure docker is running
+  service:
+    name: docker
+    state: started
+
+
+
+
+
 
 # ## Install Docker CE.
 # yum update -y && yum install -y \
