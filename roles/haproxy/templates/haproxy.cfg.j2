@@ -11,5 +11,13 @@ backend {{ load_balancer.name }}
     balance roundrobin
     option tcp-check
 
+    {% for host in groups[load_balancer.target_group] %}
+
+
+
+    server {{ host }} check fall 3 rise 2
+    {% endfor %}
+
+
 {% endfor %}
 
