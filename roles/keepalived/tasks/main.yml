@@ -1,0 +1,34 @@
+---
+# tasks file for keepalived
+
+- name: install keepalived
+  yum:
+    name: keepalived
+    state: latest
+
+- name: configure keepalived for master in /etc/haproxy/haproxy.cfg
+  template:
+    src: keepalived.active.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: inventory_hostname == active_server
+  notify:
+    - restart keepalived
+
+- name: configure keepalived for master in /etc/haproxy/haproxy.cfg
+  template:
+    src: keepalived.standby.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: inventory_hostname == standby_server
+  notify:
+    - restart keepalived
+
+- name: make sure keepalived is running
+  service:
+    name: keepalived
+    state: started
