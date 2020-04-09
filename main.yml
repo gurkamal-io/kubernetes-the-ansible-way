@@ -1,5 +1,5 @@
 ---
-- hosts: master-0
+- hosts: master-1
   become: true
   roles:
     - docker

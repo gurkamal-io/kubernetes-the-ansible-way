@@ -31,7 +31,7 @@
 
 - name: Create /etc/docker directory
   file:
-    path: /etc/some_directory
+    path: /etc/docker
     state: directory
     mode: '0755'
 
@@ -49,70 +49,3 @@
   service:
     name: docker
     state: started
-
-
-
-
-
-
-# ## Install Docker CE.
-# yum update -y && yum install -y \
-#   containerd.io-1.2.13 \
-#   docker-ce-19.03.8 \
-#   docker-ce-cli-19.03.8
-
-
-# - name: Add Docker key
-#   apt_key:
-#     url: "{{ docker_key }}"
-#     state: present
-
-# - name: Add Docker repository
-#   apt_repository:
-#     repo: "{{ docker_repo }}"
-#     state: present
-#     update_cache: yes
-
-# - name: Install Docker
-#   apt:
-#     name: docker-ce
-#     state: present
-
-# - name: copy systemd unit file
-#   template:
-#     src: "lib/systemd/system/docker.service.j2"
-#     dest: "/lib/systemd/system/docker.service"
-#     owner: root
-#     group: root
-#     mode: 0644
-#   notify:
-#     - restart docker
-#   tags: 
-#     - config
-
-# - name: Download gvisor
-#   get_url:
-#     url: https://storage.googleapis.com/gvisor/releases/nightly/latest/runsc
-#     dest: /usr/local/bin/
-#     owner: root
-#     group: root
-#     mode: 0755
-
-# - name: Configure gvisor for docker
-#   copy:
-#     content: |
-#             {
-#                "runtimes": {
-#                  "runsc": {
-#                    "path": "/usr/local/bin/runsc"
-#                  }
-#                }
-#             }
-#     dest: /etc/docker/daemon.json
-#     owner: root
-#     group: root
-#     mode: 0644
-#   notify:
-#     - restart docker
-
-# - meta: flush_handlers
