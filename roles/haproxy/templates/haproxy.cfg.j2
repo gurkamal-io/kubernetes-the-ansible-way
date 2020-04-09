@@ -1,0 +1,15 @@
+
+{% for load_balancer in load_balancers %}
+
+frontend {{ load_balancer.name }}
+    bind *:{{ load_balancer.listener_port }}
+    mode tcp
+    option tcplog
+    default_backend {{ load_balancer.name }}
+backend {{ load_balancer.name }}
+    mode tcp
+    balance roundrobin
+    option tcp-check
+
+{% endfor %}
+
