@@ -17,7 +17,7 @@ backend {{ load_balancer.name }}
 
     server {{ hostname }} 
     
-    {{ hostvars[hostname]} 
+    {{ hostvars[hostname] }}
     
     
     check fall 3 rise 2
