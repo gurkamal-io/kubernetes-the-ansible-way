@@ -1,2 +1,9 @@
 ---
 # defaults file for docker
+docker_daemon_options:
+  exec_opts: native.cgroupdriver=systemd
+  log_driver: json-file
+  log_opts:
+    max_size: 100m
+  storage_driver: overlay2
+  storage_opts: overlay2.override_kernel_check=true

@@ -1,0 +1,11 @@
+{
+  "exec-opts": ["{{ docker_daemon_options.exec_opts }}"],
+  "log-driver": "{{ docker_daemon_options.log_driver }}",
+  "log-opts": {
+    "max-size": "{{ docker_daemon_options.log_opts }}"
+  },
+  "storage-driver": "{{ docker_daemon_options.storage_driver }}",
+  "storage-opts": [
+    "{{ docker_daemon_options.storage_opts }}"
+  ]
+}

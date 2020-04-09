@@ -19,7 +19,7 @@
     gpgkey: https://download.docker.com/linux/centos/gpg
     gpgcheck: yes
 
-- name: Install Docker CE 19.3.8
+- name: Install Docker CE 19.3.8 for Kubernetes
   yum:
     name: "{{ packages }}"
     state: latest
@@ -29,9 +29,13 @@
     - docker-ce-19.03.8
     - docker-ce-cli-19.03.8
 
-
-
-
+- name: Setup Docker Daemon for Kubernetes
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0644'
 
 # ## Install Docker CE.
 # yum update -y && yum install -y \
