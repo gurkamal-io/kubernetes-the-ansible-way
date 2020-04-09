@@ -11,7 +11,7 @@ backend {{ load_balancer.name }}
     mode tcp
     balance roundrobin
     option tcp-check
-    {% for load_balancer in load_balancers %}
+    {% for node in groups.{{ load_balancer.target_group }} %}
     server master-1 192.168.5.11:{{ load_balancer.target_port }} check fall 3 rise 2
     {% endfor %}
 {% endfor %}
