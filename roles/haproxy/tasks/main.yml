@@ -1,14 +1,14 @@
 ---
 # tasks file for haproxy
 
-- name: Display all variables/facts known for a host
-  debug:
-    var: hostvars
-    # verbosity: 4
-- name: setup haproxy for kubernetes in /etc/haproxy/haproxy.cfg
-  template:
-    src: haproxy.cfg.j2
-    dest: /home/vagrant/test.cfg
-    owner: vagrant
-    group: vagrant
-    mode: "0644"
+- name: Install haproxy
+  yum:
+    name: haproxy
+    state: latest
+# - name: setup haproxy for kubernetes in /etc/haproxy/haproxy.cfg
+#   template:
+#     src: haproxy.cfg.j2
+#     dest: /etc/haproxy/haproxy.cfg
+#     owner: root
+#     group: root
+#     mode: "0644"
