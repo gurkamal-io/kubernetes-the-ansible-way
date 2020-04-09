@@ -1,5 +1,7 @@
 ---
-- hosts: master-1
+- hosts: 
+  - master_nodes
+  - worker_nodes
   become: true
   roles:
     - docker
