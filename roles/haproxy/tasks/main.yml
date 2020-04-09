@@ -3,7 +3,7 @@
 
 - name: setup haproxy for kubernetes in /etc/haproxy/haproxy.cfg
   template:
-    src: daemon.json.j2
+    src: haproxy.cfg.j2
     dest: /home/vagrant/test.cfg
     owner: vagrant
     group: vagrant
