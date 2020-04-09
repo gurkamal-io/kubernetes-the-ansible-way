@@ -1,4 +1,3 @@
-
 {% for load_balancer in load_balancers %}
 frontend {{ load_balancer.name }}
     bind *:{{ load_balancer.listener_port }}
@@ -16,4 +15,3 @@ backend {{ load_balancer.name }}
 
 
 {% endfor %}
-
