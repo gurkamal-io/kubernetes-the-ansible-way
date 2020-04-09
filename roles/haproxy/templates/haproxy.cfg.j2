@@ -4,7 +4,6 @@ frontend {{ load_balancer.name }}
     mode tcp
     option tcplog
     default_backend {{ load_balancer.name }}
-
 backend {{ load_balancer.name }}
     mode tcp
     balance roundrobin
@@ -12,6 +11,5 @@ backend {{ load_balancer.name }}
 {% for hostname in groups[load_balancer.target_group] %}
     server {{ hostname }} {{ hostvars[hostname]["ansible_host"] }}:{{ load_balancer.target_port }} check fall 3 rise 2
 {% endfor %}
-
 
 {% endfor %}
