@@ -15,7 +15,7 @@ backend {{ load_balancer.name }}
 
 
 
-    server {{ hostname }} {{ hostvars[hostname].ansible_fqdn}} check fall 3 rise 2
+    server {{ hostname }} {{ hostvars[hostname].ansible_all_ipv4_addresses[0]}} check fall 3 rise 2
 
     {% endfor %}
 
