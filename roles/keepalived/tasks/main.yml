@@ -63,6 +63,7 @@
     - Restart keepalived
 
 - name: Ensure the user 'keepalived_script' exists to monitor haproxy
+  become: true
   user:
     name: keepalived_script
     group: users
