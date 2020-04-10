@@ -27,7 +27,7 @@ None
 ## Example Playbook
 
 ```yaml
-- hosts: servers
+- hosts: kubernetes_haproxy_nodes
   roles:
     # haproxy example for keepalived HA loadbalancer setup for kubernetes
     - role: firewalld
@@ -46,9 +46,10 @@ None
         internal_sources:
           - 10.0.0.0/24
         internal_rich_rules:
-          - rule protocol value="vrrp" accept
+          - rule protocol value="vrrp" accept # to allow keepalived to send heartbeat for failover detection
 
-    # kubernetes master node
+- hosts: kubernetes_master_nodes
+  roles:
     - role: firewalld
       vars:
         internal_interfaces:
@@ -62,7 +63,8 @@ None
         internal_sources:
           - 10.0.0.0/24 # cluster CIDR block
 
-    # kubernetes worker node
+- hosts: kubernetes_worker_nodes
+  roles:
     - role: firewalld
       vars:
         public_interfaces:
