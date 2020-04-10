@@ -1,4 +1,4 @@
-# Role Name
+# haproxy
 
 A brief description of the role goes here.
 
@@ -49,6 +49,7 @@ worker-2
 ```
 
 ```yaml
+# Exmaple playbook
 - hosts: kubernetes_load_balancers
   roles:
     - role: haproxy
