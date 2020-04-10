@@ -28,28 +28,27 @@
           - 10.0.0.0/24
         internal_rich_rules:
           - rule protocol value="vrrp" accept
-
-    - role: haproxy
-      vars:
-        load_balancers:
-          - name: kube_apiserver
-            listener_port: 6443
-            target_port: 6443
-            target_group: "master_nodes"
-          - name: ingress_controller_http
-            listener_port: 80
-            target_port: 30080
-            target_group: "worker_nodes"
-          - name: ingress_controller_https
-            listener_port: 443
-            target_port: 30443
-            target_group: "worker_nodes"
-    - role: keepalived
-      vars:
-        inventory_hostname_short_active_server: haproxy-0
-        inventory_hostname_short_standby_server: haproxy-1
-        keepalived_vrrp_auth_pass: "{{ hostvars.localhost.randomly_generated_keepalived_vrrp_auth_pass }}"
-        virtual_ip_address: "10.0.0.10"
+    # - role: haproxy
+    #   vars:
+    #     load_balancers:
+    #       - name: kube_apiserver
+    #         listener_port: 6443
+    #         target_port: 6443
+    #         target_group: "master_nodes"
+    #       - name: ingress_controller_http
+    #         listener_port: 80
+    #         target_port: 30080
+    #         target_group: "worker_nodes"
+    #       - name: ingress_controller_https
+    #         listener_port: 443
+    #         target_port: 30443
+    #         target_group: "worker_nodes"
+    # - role: keepalived
+    #   vars:
+    #     inventory_hostname_short_active_server: haproxy-0
+    #     inventory_hostname_short_standby_server: haproxy-1
+    #     keepalived_vrrp_auth_pass: "{{ hostvars.localhost.randomly_generated_keepalived_vrrp_auth_pass }}"
+    #     virtual_ip_address: "10.0.0.10"
 # #
 # #
 #

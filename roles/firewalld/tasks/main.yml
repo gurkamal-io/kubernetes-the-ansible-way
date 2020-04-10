@@ -7,6 +7,13 @@
     name: firewalld
     state: latest
 
+- name: Ensure firewalld is running
+  become: true
+  systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+
 - name: Ensure public zone is setup
   block:
     - name: Ensure desired interfaces are bound to public zone
@@ -114,10 +121,3 @@
       when: internal_rich_rules | length > 0
       notify:
         - Restart firewalld
-
-- name: Ensure firewalld is running
-  become: true
-  systemd:
-    name: firewalld
-    state: started
-    enabled: yes
