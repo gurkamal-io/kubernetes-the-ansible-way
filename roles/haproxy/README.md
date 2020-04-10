@@ -8,13 +8,13 @@ Any pre-requisites that may not be covered by Ansible itself or the role should 
 
 ## Role Variables
 
-| Variable                        | Type        | Description                                                       |
-| ------------------------------- | ----------- | ----------------------------------------------------------------- |
-| load_balancers                  | Array<Dict> | list of TCP Layer 4 load balancers to deploy                      |
-| load_balancers[i].name          | String      | name of load balancer passed to haproxy frontend and backend name |
-| load_balancers[i].listener_port | Number      | port load balancer will listen on for incomming traffic           |
-| load_balancers[i].target_port   | Number      | port load balancer will proxy traffic to                          |
-| load_balancers[i].target_group  | String      | the exact name of the group in ansible inventory to target        |
+| Variable                          | Type        | Description                                                       |
+| --------------------------------- | ----------- | ----------------------------------------------------------------- |
+| `load_balancers`                  | Array<Dict> | list of TCP Layer 4 load balancers to deploy                      |
+| `load_balancers[i].name`          | String      | name of load balancer passed to haproxy frontend and backend name |
+| `load_balancers[i].listener_port` | Number      | port load balancer will listen on for incomming traffic           |
+| `load_balancers[i].target_port`   | Number      | port load balancer will proxy traffic to                          |
+| `load_balancers[i].target_group`  | String      | the exact name of the group in ansible inventory to target        |
 
 A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
 
