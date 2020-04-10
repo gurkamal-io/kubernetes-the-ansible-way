@@ -14,7 +14,6 @@ CentOS/RHEL/Fedora
 | public_ports        | Array<String> | ports to open in public zone                         |
 | public_sources      | Array<String> | source IPs to allow into public zone                 |
 | public_rich_rules   | Array<String> | rich-rules for public zone (specific to firewalld)   |
-| -----------------   | ------------- | --------------------------------------------------   |
 | internal_interfaces | Array<String> | network interfaces to bind internal zone to          |
 | internal_ports      | Array<String> | ports to open in internal zone                       |
 | internal_sources    | Array<String> | source IPs to allow into internal zone               |
