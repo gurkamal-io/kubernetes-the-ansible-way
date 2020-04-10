@@ -2,6 +2,7 @@
 # handlers file for haproxy
 
 - name: Restart haproxy
+  become: true
   systemd:
     name: haproxy
     state: restarted

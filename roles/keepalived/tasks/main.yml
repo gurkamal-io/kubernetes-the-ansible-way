@@ -16,7 +16,7 @@
   notify:
     - Restart keepalived
 
-- name: Ensure ip forwarding is on
+- name: Ensure IP forwarding is on
   become: true
   sysctl:
     name: net.ipv4.ip_forward
@@ -27,7 +27,7 @@
   notify:
     - Restart keepalived
 
-- name: Set ip nonlocal binding is on
+- name: Ensure IP nonlocal binding is on
   become: true
   sysctl:
     name: net.ipv4.ip_nonlocal_bind
