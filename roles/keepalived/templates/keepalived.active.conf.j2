@@ -14,7 +14,7 @@ vrrp_instance VI_1 {
     advert_int 1
     authentication {
         auth_type PASS
-        auth_pass {{ keepalived_vrrp_auth_pass }}
+        auth_pass "{{ keepalived_vrrp_auth_pass }}"
     }
     unicast_src_ip {{ hostvars[ inventory_hostname_short_active_server ].ansible_host }}
     unicast_peer {
