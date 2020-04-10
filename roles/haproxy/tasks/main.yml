@@ -1,12 +1,50 @@
 ---
 # tasks file for haproxy
 
-- name: install haproxy
+- name: Install haproxy
   yum:
     name: haproxy
     state: latest
 
-- name: configure haproxy for kubernetes in /etc/haproxy/haproxy.cfg
+- name: Install required packages for ansible seboolean module
+  yum:
+    name: "{{ packages }}"
+    state: latest
+  vars:
+    packages:
+      - libselinux-python
+      - libsemanage-python
+
+- name: Turn on seboolean haproxy_connect_any
+  seboolean:
+    name: haproxy_connect_any
+    state: yes
+    persistent: yes
+  notify:
+    - Restart haproxy
+
+- name: Set ip forwarding on in /proc and in the sysctl file and reload if necessary
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: yes
+    state: present
+    reload: yes
+  notify:
+    - Restart haproxy
+
+- name: Set ip nonlocal binding on in /proc and in the sysctl file and reload if necessary
+  become: true
+  sysctl:
+    name: net.ipv4.ip_nonlocal_bind
+    value: "1"
+    sysctl_set: yes
+    state: present
+    reload: yes
+  notify:
+    - Restart haproxy
+
+- name: Configure haproxy in /etc/haproxy/haproxy.cfg
   template:
     src: haproxy.cfg.j2
     dest: /etc/haproxy/haproxy.cfg
@@ -14,9 +52,10 @@
     group: root
     mode: "0644"
   notify:
-    - restart haproxy
+    - Restart haproxy
 
-- name: make sure haproxy is running
-  service:
+- name: Make sure haproxy is running
+  systemd:
     name: haproxy
     state: started
+    enabled: yes

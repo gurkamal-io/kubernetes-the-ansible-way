@@ -1,34 +1,70 @@
 ---
 # tasks file for keepalived
 
-- name: install keepalived
+- name: Ensure latest version of keepalived is installed
+  become: true
   yum:
     name: keepalived
     state: latest
 
-- name: configure keepalived for master in /etc/haproxy/haproxy.cfg
+- name: Ensure seboolean keepalived_connect_any is on
+  become: true
+  seboolean:
+    name: keepalived_connect_any
+    state: yes
+    persistent: yes
+  notify:
+    - Restart keepalived
+
+- name: Ensure ip forwarding is on
+  become: true
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: yes
+    state: present
+    reload: yes
+  notify:
+    - Restart keepalived
+
+- name: Set ip nonlocal binding is on
+  become: true
+  sysctl:
+    name: net.ipv4.ip_nonlocal_bind
+    value: "1"
+    sysctl_set: yes
+    state: present
+    reload: yes
+  notify:
+    - Restart keepalived
+
+- name: Ensure keepalived is configured on active server
+  become: true
   template:
     src: keepalived.active.conf.j2
     dest: /etc/keepalived/keepalived.conf
     owner: root
     group: root
     mode: "0644"
-  when: inventory_hostname == active_server
+  when: inventory_hostname_short == inventory_hostname_short_active_server
   notify:
-    - restart keepalived
+    - Restart keepalived
 
-- name: configure keepalived for master in /etc/haproxy/haproxy.cfg
+- name: Ensure keepalived is configured on standby server
+  become: true
   template:
     src: keepalived.standby.conf.j2
     dest: /etc/keepalived/keepalived.conf
     owner: root
     group: root
     mode: "0644"
-  when: inventory_hostname == standby_server
+  when: inventory_hostname_short == inventory_hostname_short_standby_server
   notify:
-    - restart keepalived
+    - Restart keepalived
 
-- name: make sure keepalived is running
-  service:
+- name: Ensure keepalived is started
+  become: true
+  systemd:
     name: keepalived
     state: started
+    enabled: yes

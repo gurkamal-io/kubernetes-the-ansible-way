@@ -1,5 +1,12 @@
 ---
 # defaults file for docker
+
+# Must be exact package versions available to yum, ie:
+# containerd.io-1.2.13
+# docker-ce-19.03.8
+containerd_io_yum_package_version: "1.2.13"
+docker_ce_yum_package_version: "19.03.8"
+
 docker_daemon_options:
   exec_opts: native.cgroupdriver=systemd
   log_driver: json-file

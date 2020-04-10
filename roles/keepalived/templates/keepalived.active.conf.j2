@@ -14,11 +14,11 @@ vrrp_instance VI_1 {
     advert_int 1
     authentication {
         auth_type PASS
-        auth_pass {{ vrrp_heartbeat_auth_password }}
+        auth_pass {{ keepalived_vrrp_auth_pass }}
     }
-    unicast_src_ip {{ hostvars[ active_server ][ "ansible_host" ] }}
+    unicast_src_ip {{ hostvars[ inventory_hostname_short_active_server ].ansible_host }}
     unicast_peer {
-        {{ hostvars[ standby_server ][ "ansible_host" ] }}
+        {{ hostvars[ inventory_hostname_short_standby_server ].ansible_host }}
     }
     virtual_ipaddress {
         {{ virtual_ip_address }}

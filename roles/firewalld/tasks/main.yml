@@ -1,0 +1,123 @@
+---
+# tasks file for firewalld
+
+- name: Ensure latest version of firewalld is installed
+  become: true
+  yum:
+    name: firewalld
+    state: latest
+
+- name: Ensure public zone is setup
+  block:
+    - name: Ensure desired interfaces are bound to public zone
+      become: true
+      firewalld:
+        interface: "{{ item }}"
+        state: enabled
+        zone: public
+        permanent: yes
+        immediate: yes
+      loop: "{{ public_interfaces }}"
+      when: public_interfaces | length > 0
+      notify:
+        - Restart firewalld
+
+    - name: Ensure desired ports are open to public zone
+      become: true
+      firewalld:
+        port: "{{ item }}"
+        state: enabled
+        zone: public
+        permanent: yes
+        immediate: yes
+      loop: "{{ public_ports }}"
+      when: public_ports | length > 0
+      notify:
+        - Restart firewalld
+
+    - name: Ensure traffic is allowed from desired IPs in public zone
+      become: true
+      firewalld:
+        source: "{{ item }}"
+        state: enabled
+        zone: public
+        permanent: yes
+        immediate: yes
+      loop: "{{ public_sources }}"
+      when: public_sources | length > 0
+      notify:
+        - Restart firewalld
+
+    - name: Ensure desired firewalld rich-rules are enabled in public zone
+      become: true
+      firewalld:
+        rich_rule: "{{ item }}"
+        state: enabled
+        zone: public
+        permanent: yes
+        immediate: yes
+      loop: "{{ public_rich_rules }}"
+      when: public_rich_rules | length > 0
+      notify:
+        - Restart firewalld
+
+- name: Ensure internal zone is setup
+  block:
+    - name: Ensure desired interfaces are bound to internal zone
+      become: true
+      firewalld:
+        interface: "{{ item }}"
+        state: enabled
+        zone: internal
+        permanent: yes
+        immediate: yes
+      loop: "{{ internal_interfaces }}"
+      when: internal_interfaces | length > 0
+      notify:
+        - Restart firewalld
+
+    - name: Ensure desired ports are open to internal zone
+      become: true
+      firewalld:
+        port: "{{ item }}"
+        state: enabled
+        zone: internal
+        permanent: yes
+        immediate: yes
+      loop: "{{ internal_ports }}"
+      when: internal_ports | length > 0
+      notify:
+        - Restart firewalld
+
+    - name: Ensure traffic is allowed from desired IPs in internal zone
+      become: true
+      firewalld:
+        source: "{{ item }}"
+        state: enabled
+        zone: internal
+        permanent: yes
+        immediate: yes
+      loop: "{{ internal_sources }}"
+      when: internal_sources | length > 0
+      notify:
+        - Restart firewalld
+
+    - name: Ensure desired firewalld rich-rules are enabled in internal zone
+      become: true
+      firewalld:
+        rich_rule: "{{ item }}"
+        state: enabled
+        zone: internal
+        permanent: yes
+        immediate: yes
+      loop: "{{ internal_rich_rules }}"
+      when: internal_rich_rules | length > 0
+      notify:
+        - Restart firewalld
+
+- name: Ensure firewalld is running
+  become: true
+  systemd:
+    name: firewalld
+    state: started
+    enabled: yes

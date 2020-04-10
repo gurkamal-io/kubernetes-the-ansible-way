@@ -1,7 +1,7 @@
 ---
 # defaults file for keepalived
 
-active_server: haproxy-0
-standby_server: haproxy-1
+inventory_hostname_short_active_server: haproxy-0
+inventory_hostname_short_standby_server: haproxy-1
+keepalived_vrrp_auth_pass: password
 virtual_ip_address: "10.0.0.10"
-vrrp_heartbeat_auth_password: "password"

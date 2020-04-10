@@ -1,0 +1,11 @@
+---
+# defaults file for keepalived
+public_interfaces: []
+public_ports: []
+public_sources: []
+public_rich_rules: []
+
+internal_interfaces: []
+internal_ports: []
+internal_sources: []
+internal_rich_rules: []
