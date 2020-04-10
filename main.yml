@@ -1,11 +1,15 @@
 ---
-- name: bootstrap load balancers with high availability
-  hosts: haproxy_nodes
-  become: true
-  pre_tasks:
+- name: Randomly generate a password for keepalived
+  hosts: localhost
+  tasks:
     - name: Randomly generate a password for keepalived
       set_fact:
         randomly_generated_keepalived_vrrp_auth_pass: "{{ (ansible_fqdn | password_hash('sha512') | password_hash('sha256'))[-9:-1] }}"
+
+- name: bootstrap load balancers with high availability
+  hosts: haproxy_nodes
+  become: true
+
   roles:
     - role: firewalld
       vars:
@@ -40,12 +44,12 @@
             listener_port: 443
             target_port: 30443
             target_group: "worker_nodes"
-#     - role: keepalived
-#       vars:
-#         inventory_hostname_short_active_server: haproxy-0
-#         inventory_hostname_short_standby_server: haproxy-1
-#         keepalived_vrrp_auth_pass: "{{ randomly_generated_keepalived_vrrp_auth_pass }}"
-#         virtual_ip_address: "10.0.0.10"
+    - role: keepalived
+      vars:
+        inventory_hostname_short_active_server: haproxy-0
+        inventory_hostname_short_standby_server: haproxy-1
+        keepalived_vrrp_auth_pass: "{{ hostvars.localhost.randomly_generated_keepalived_vrrp_auth_pass }}"
+        virtual_ip_address: "10.0.0.10"
 # #
 # #
 #
