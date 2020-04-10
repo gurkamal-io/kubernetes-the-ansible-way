@@ -62,6 +62,13 @@
   notify:
     - Restart keepalived
 
+- name: Ensure the user 'keepalived_script' exists to monitor haproxy
+  user:
+    name: keepalived_script
+    group: users
+  notify:
+    - Restart keepalived
+
 - name: Ensure keepalived is started
   become: true
   systemd:
