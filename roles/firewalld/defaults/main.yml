@@ -1,5 +1,7 @@
 ---
 # defaults file for keepalived
+default_zone: public
+
 public_interfaces: []
 public_ports: []
 public_sources: []

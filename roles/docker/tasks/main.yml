@@ -1,7 +1,7 @@
 ---
 # tasks file for docker
 
-- name: install required packages for docker-ce
+- name: Ensure required packages for docker-ce are installed
   become: true
   yum:
     name: "{{ packages }}"
@@ -12,7 +12,7 @@
       - device-mapper-persistent-data
       - lvm2
 
-- name: add docker-ce-stable repo
+- name: Ensure docker-ce-stable repo is available to yum
   become: true
   yum_repository:
     name: docker-ce-stable
@@ -21,13 +21,13 @@
     gpgkey: https://download.docker.com/linux/centos/gpg
     gpgcheck: yes
 
-- name: install containerd.io-{{ containerd_io_yum_package_version }}
+- name: Ensure containerd.io-{{ containerd_io_yum_package_version }} is installed
   become: true
   yum:
     name: containerd.io-{{ containerd_io_yum_package_version }}
     state: latest
 
-- name: install docker-ce-{{ docker_ce_yum_package_version }} and install docker-ce-cli-{{ docker_ce_yum_package_version }}
+- name: Ensure docker-ce-{{ docker_ce_yum_package_version }} and docker-ce-cli-{{ docker_ce_yum_package_version }} are installed
   become: true
   yum:
     name: "{{ packages }}"
@@ -36,15 +36,19 @@
     packages:
       - docker-ce-{{ docker_ce_yum_package_version }}
       - docker-ce-cli-{{ docker_ce_yum_package_version }}
+  notify:
+    - Restart docker
 
-- name: create /etc/docker directory
+- name: Ensure /etc/docker directory exists
   become: true
   file:
     path: /etc/docker
     state: directory
     mode: "0755"
+  notify:
+    - Restart docker
 
-- name: setup docker daemon for kubernetes in /etc/docker/daemon.json
+- name: Ensure docker daemon is configured for kubernetes at /etc/docker/daemon.json
   become: true
   template:
     src: daemon.json.j2
@@ -53,9 +57,9 @@
     group: root
     mode: "0644"
   notify:
-    - restart docker
+    - Restart docker
 
-- name: make sure docker is running
+- name: Ensure docker is running
   become: true
   systemd:
     name: docker

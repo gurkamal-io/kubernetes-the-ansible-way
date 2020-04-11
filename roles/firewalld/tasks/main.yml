@@ -14,8 +14,33 @@
     state: started
     enabled: yes
 
+- name: Get current default zone for firewalld
+  become: true
+  command: firewall-cmd --get-default-zone
+  register: get_default_zone_response
+
+- name: Ensure default zone is {{ default_zone }}
+  become: true
+  command: firewall-cmd --set-default-zone={{ default_zone }}
+  when: get_default_zone_response.stdout != default_zone
+  notify:
+    - Restart firewalld
+
 - name: Ensure public zone is setup
   block:
+    - name: Ensure internal interfaces are not bound to public zone
+      become: true
+      firewalld:
+        interface: "{{ item }}"
+        state: disabled
+        zone: public
+        permanent: yes
+        immediate: yes
+      loop: "{{ internal_interfaces }}"
+      when: internal_interfaces | length > 0
+      notify:
+        - Restart firewalld
+
     - name: Ensure desired interfaces are bound to public zone
       become: true
       firewalld:
@@ -70,6 +95,19 @@
 
 - name: Ensure internal zone is setup
   block:
+    - name: Ensure public interfaces are not bound to internal zone
+      become: true
+      firewalld:
+        interface: "{{ item }}"
+        state: disabled
+        zone: internal
+        permanent: yes
+        immediate: yes
+      loop: "{{ public_interfaces }}"
+      when: public_interfaces | length > 0
+      notify:
+        - Restart firewalld
+
     - name: Ensure desired interfaces are bound to internal zone
       become: true
       firewalld:

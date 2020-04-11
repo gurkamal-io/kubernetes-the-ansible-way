@@ -8,28 +8,20 @@
 
 - name: Bootstrap load balancers with high availability
   hosts: haproxy_nodes
-  become: true
-
   roles:
     - role: firewalld
       vars:
-        public_interfaces:
-          - eth0
-        public_ports:
-          - 22/tcp # ssh
-          - 80/tcp # http
-          - 443/tcp # https
-        public_sources:
-          - 0.0.0.0/0 # anywhere
-        internal_interfaces:
-          - eth1
-        internal_ports:
+        interface_connected_to_public: eth0
+        interface_connected_to_kubernetes: eth1
+        kubernetes_network_cidr: 10.0.0.0/24
+        ports_open_to_kubernetes:
           - 22/tcp # ssh
           - 6443/tcp # kube-apiserver
-        internal_sources:
-          - 10.0.0.0/24 # cluster cidr block
-        internal_rich_rules:
-          - rule protocol value="vrrp" accept # keepalived
+        ports_open_to_public:
+          - 22/tcp # bastion
+          - 80/tcp # http
+          - 443/tcp # https
+
     - role: haproxy
       vars:
         load_balancers:
@@ -45,13 +37,18 @@
             listener_port: 443
             target_port: 30443
             target_group: "worker_nodes"
+
     - role: keepalived
       vars:
         inventory_hostname_short_active_server: haproxy-0
         inventory_hostname_short_standby_server: haproxy-1
         keepalived_vrrp_auth_pass: "{{ hostvars.localhost.randomly_generated_keepalived_vrrp_auth_pass }}"
-        virtual_ip_address: "10.0.0.10"
-# #
+        virtual_ip_address: 10.0.0.10
+        process_to_monitor: haproxy
+        vrrp_network_interface_active_server: eth1
+        vrrp_network_interface_standby_server: eth1
+
+    - role: docker # TEMP TESTING
 # #
 #
 #

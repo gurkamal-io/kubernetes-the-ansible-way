@@ -5,3 +5,6 @@ inventory_hostname_short_active_server: haproxy-0
 inventory_hostname_short_standby_server: haproxy-1
 keepalived_vrrp_auth_pass: password
 virtual_ip_address: "10.0.0.10"
+process_to_monitor: haproxy
+vrrp_network_interface_active_server: eth1
+vrrp_network_interface_standby_server: eth1
