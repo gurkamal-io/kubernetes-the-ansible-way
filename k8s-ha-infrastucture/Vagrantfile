@@ -217,9 +217,10 @@ Vagrant.configure("2") do |config|
     rm -rf "${VAGRANT_FILE_PATH}" && \
     echo "deleted ${VAGRANT_FILE_PATH}"
 
-
-    # Ansible (can be run from any node)
-    yum install -y "${yum_packages_to_preinstall}"
+    # preinstall yum packages
+    for yum_package in "${yum_packages_to_preinstall[@]}"; do
+      yum install -y "${yum_package}"
+    done
     yum update -y
     /sbin/shutdown -r
   SCRIPT
