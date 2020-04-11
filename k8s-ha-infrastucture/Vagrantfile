@@ -156,6 +156,9 @@ Vagrant.configure("2") do |config|
     MASTER_NODE_COUNT="${7}";   MASTER_NODE_HOSTNAME_PREFIX="${8}";   MASTER_NODE_SUBNET_SUFFIX="${9}";
     WORKER_NODE_COUNT="${10}";  WORKER_NODE_HOSTNAME_PREFIX="${11}";  WORKER_NODE_SUBNET_SUFFIX="${12}";
     LOAD_BALANCER_VIRTUAL_IP="${13}"
+    
+    readonly centos7_epel_rpm="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+    readonly additional_yum_packages_to_install="vim git tree wget"
 
     # generate ssh keypair
     runuser -l vagrant -c "ssh-keygen -q -t rsa -N '' -f /home/vagrant/.ssh/id_rsa 2>/dev/null <<< y >/dev/null" && \
@@ -206,8 +209,10 @@ Vagrant.configure("2") do |config|
     rm -rf "${VAGRANT_FILE_PATH}" && \
     echo "deleted ${VAGRANT_FILE_PATH}"
 
+
     # Ansible (can be run from any node)
-    yum install -y "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+    yum install -y "${centos7_epel_rpm}"
+    yum install -y "${additional_yum_packages_to_install}"
     yum install -y "ansible" && \
     echo "Ansible installed -- $(ansible --version | head -n 1)"
     yum update -y
