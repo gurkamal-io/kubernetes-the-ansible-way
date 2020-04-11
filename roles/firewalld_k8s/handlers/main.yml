@@ -1,5 +1,5 @@
 ---
-# handlers file for firewalld
+# handlers file for firewalld_k8s
 
 - name: Restart firewalld
   become: true

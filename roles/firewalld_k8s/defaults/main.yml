@@ -1,5 +1,6 @@
 ---
-# defaults file for keepalived
+# defaults file for firewalld_k8s
+
 default_zone: public
 
 public_interfaces: []

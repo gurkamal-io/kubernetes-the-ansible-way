@@ -9,7 +9,7 @@
 - name: Bootstrap load balancers with high availability
   hosts: haproxy_nodes
   roles:
-    - role: firewalld
+    - role: firewalld_k8s
       vars:
         interface_connected_to_public: eth0
         interface_connected_to_kubernetes: eth1

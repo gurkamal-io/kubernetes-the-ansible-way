@@ -1,6 +1,6 @@
 galaxy_info:
   author: Gurkamal Singh
-  description: provision firewalld rules
+  description: Provision firewalld rules for nodes in kubernetes clusters
   company: gurkamal.io
 
   license: MIT
@@ -25,5 +25,6 @@ galaxy_info:
     - kubernetes
     - haproxy
     - keepalived
+    - k8s
 
 dependencies: []
