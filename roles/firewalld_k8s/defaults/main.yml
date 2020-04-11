@@ -1,14 +1,26 @@
 ---
 # defaults file for firewalld_k8s
 
-default_zone: public
+# interfaces should be seperate internal network from public
+interfaces_connected_to_public:
+  - eth0
+interfaces_connected_to_kubernetes:
+  - eth1
 
-public_interfaces: []
-public_ports: []
-public_sources: []
-public_rich_rules: []
+# cidr block(s) or internal ip's of nodes in the cluster (load balancers, masters, workers)
+kubernetes_sources:
+  - "0.0.0.0/0"
+# - "10.0.0.0/24"    # example of cluster subnet
+# - "10.0.0.10"      # example of individial ip
+# - "10.240.0.10/24" # example of another subnet in cluster architecture
 
-internal_interfaces: []
-internal_ports: []
-internal_sources: []
-internal_rich_rules: []
+# ports on this node that should be open to kubernetes_sources above
+ports_open_to_kubernetes:
+  - 22/tcp # ssh
+
+# ports on this node that should be open to public
+ports_open_to_public:
+  - 22/tcp # bastion
+
+rich_rules_for_kubernetes_traffic:
+rich_rules_for_public_traffic:

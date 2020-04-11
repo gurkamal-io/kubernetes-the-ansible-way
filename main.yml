@@ -11,9 +11,19 @@
   roles:
     - role: firewalld_k8s
       vars:
-        interface_connected_to_public: eth0
-        interface_connected_to_kubernetes: eth1
-        kubernetes_network_cidr: 10.0.0.0/24
+        interfaces_connected_to_public:
+          - eth0
+        interfaces_connected_to_kubernetes:
+          - eth1
+        kubernetes_sources:
+          - 10.0.0.10
+          - 10.0.0.100
+          - 10.0.0.101
+          - 10.0.0.101
+          - 10.0.0.102
+          - 10.0.0.201
+          - 10.0.0.201
+          - 10.0.0.202
         ports_open_to_kubernetes:
           - 22/tcp # ssh
           - 6443/tcp # kube-apiserver
