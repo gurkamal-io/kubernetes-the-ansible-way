@@ -11,28 +11,26 @@
   roles:
     - role: firewalld_k8s
       vars:
-        interfaces_connected_to_public:
-          - eth0
-        interfaces_connected_to_kubernetes:
-          - eth1
+        ssh_from_public: true
+        block_or_drop_unauthorized_connections: block
         kubernetes_sources:
-          - 10.0.0.10
-          - 10.0.0.100
-          - 10.0.0.101
-          - 10.0.0.101
-          - 10.0.0.102
-          - 10.0.0.201
-          - 10.0.0.201
-          - 10.0.0.202
+          - "10.0.0.10"
+          - "10.0.0.50"
+          - "10.0.0.51"
+          - "10.0.0.100"
+          - "10.0.0.101"
+          - "10.0.0.102"
+          - "10.0.0.200"
+          - "10.0.0.201"
+          - "10.0.0.202"
         ports_open_to_kubernetes:
-          - 22/tcp # ssh
           - 6443/tcp # kube-apiserver
         ports_open_to_public:
-          - 22/tcp # bastion
           - 80/tcp # http
           - 443/tcp # https
-
-    - role: haproxy
+        rich_rules_applied_to_kubernetes_traffic:
+          - rule protocol value="vrrp" accept
+    - role: haproxy_k8s
       vars:
         load_balancers:
           - name: kube_apiserver
@@ -47,8 +45,7 @@
             listener_port: 443
             target_port: 30443
             target_group: "worker_nodes"
-
-    - role: keepalived
+    - role: keepalived_k8s
       vars:
         inventory_hostname_short_active_server: haproxy-0
         inventory_hostname_short_standby_server: haproxy-1
@@ -58,19 +55,53 @@
         vrrp_network_interface_active_server: eth1
         vrrp_network_interface_standby_server: eth1
 
-    - role: docker # TEMP TESTING
-# #
-#
-#
-#
-#
-# - name: install docker as the container runtime
-#   hosts: haproxy-0 # master_nodes, worker_nodes
-#   become: true
-#   roles:
-#     - docker
-#     -
+- name: Bootstrap master nodes
+  hosts: master_nodes
+  roles:
+    - role: firewalld_k8s
+      vars:
+        ssh_from_public: true
+        block_or_drop_unauthorized_connections: block
+        kubernetes_sources:
+          - "10.0.0.10"
+          - "10.0.0.50"
+          - "10.0.0.51"
+          - "10.0.0.100"
+          - "10.0.0.101"
+          - "10.0.0.102"
+          - "10.0.0.200"
+          - "10.0.0.201"
+          - "10.0.0.202"
+        ports_open_to_kubernetes:
+          # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#check-required-ports
+          - 6443/tcp # Kubernetes API server
+          - 2379-2380/tcp # etcd server client API
+          - 10250/tcp # Kubelet API
+          - 10251/tcp # kube-scheduler
+          - 10252/tcp # kube-controller-manager
 
-# tasks:
-#   - debug:
-#       msg: "{{ (ansible_fqdn | password_hash('sha512') | password_hash('sha256'))[-9:-1] }}"
+    - role: docker
+
+- name: Bootstrap worker nodes
+  hosts: worker_nodes
+  roles:
+    - role: firewalld_k8s
+      vars:
+        ssh_from_public: true
+        block_or_drop_unauthorized_connections: block
+        kubernetes_sources:
+          - "10.0.0.10"
+          - "10.0.0.50"
+          - "10.0.0.51"
+          - "10.0.0.100"
+          - "10.0.0.101"
+          - "10.0.0.102"
+          - "10.0.0.200"
+          - "10.0.0.201"
+          - "10.0.0.202"
+        ports_open_to_kubernetes:
+          # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#check-required-ports
+          - 10250/tcp # Kubelet API
+          - 30000-32767/tcp # NodePort Services
+
+    - role: docker

@@ -1,26 +1,30 @@
 ---
 # defaults file for firewalld_k8s
 
-# interfaces should be seperate internal network from public
-interfaces_connected_to_public:
-  - eth0
-interfaces_connected_to_kubernetes:
-  - eth1
+# whether or not allow public ssh on this node
+# if true, this node acts like a bastion into kubernetes internal network
+ssh_from_public: true
+
+# default response when a connection not authorized
+# block -Any incoming network connections are rejected with an icmp-host-prohibited message for IPv4 and icmp6-adm-prohibited for IPv6.
+# drop - Any incoming network packets are dropped, there is no reply.
+block_or_drop_unauthorized_connections: block
 
 # cidr block(s) or internal ip's of nodes in the cluster (load balancers, masters, workers)
-kubernetes_sources:
-  - "0.0.0.0/0"
+kubernetes_sources: []
 # - "10.0.0.0/24"    # example of cluster subnet
 # - "10.0.0.10"      # example of individial ip
 # - "10.240.0.10/24" # example of another subnet in cluster architecture
 
-# ports on this node that should be open to kubernetes_sources above
-ports_open_to_kubernetes:
-  - 22/tcp # ssh
+# port/protocol combos on this node that should be open to kubernetes_sources above
+ports_open_to_kubernetes: []
+# - 6443/tcp      # kube-apiserver
+# - 2379-2380/tcp # etcd
 
-# ports on this node that should be open to public
-ports_open_to_public:
-  - 22/tcp # bastion
+# port/protocol combos on this node that should be open to public
+ports_open_to_public: []
+# - 30000-32767/tcp # NodePorts
 
-rich_rules_for_kubernetes_traffic:
-rich_rules_for_public_traffic:
+# special firewalld rich-rules needed in each zone
+rich_rules_applied_to_kubernetes_traffic: []
+rich_rules_applied_to_public_traffic: []
