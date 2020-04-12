@@ -1,0 +1,9 @@
+---
+# handlers file for haproxy_k8s
+
+- name: Restart haproxy
+  become: true
+  systemd:
+    name: haproxy
+    state: restarted
+    enabled: yes
