@@ -1,0 +1,35 @@
+---
+# tasks file for centos7_k8s
+
+- name: Ensure the br_netfilter kernel module is loaded
+  become: true
+  modprobe:
+    name: br_netfilter
+    state: present
+    params: "numdummies=2"
+
+- name: Ensure iptables can see bridged traffic for container traffic and kube-proxy
+  become: true
+  sysctl:
+    name: "{{ item }}"
+    value: "1"
+    state: present
+    reload: yes
+  loop:
+    - net.bridge.bridge-nf-call-ip6tables
+    - net.bridge.bridge-nf-call-iptables
+
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  become: true
+  selinux:
+    policy: targeted
+    state: permissive
+# - name: Disabling Swap on all nodes
+#   become: true
+#   shell: swapoff -a
+
+# - name: Commenting Swap entries in /etc/fstab
+#   replace:
+#     path: /etc/fstab
+#     regexp: "(.*swap*)"
+#     replace: '#\1'

@@ -94,6 +94,8 @@
           storage_driver: overlay2
           storage_opts: overlay2.override_kernel_check=true
 
+    - role: centos7_k8s
+
 - name: Bootstrap worker nodes
   hosts: worker_nodes
   roles:
@@ -127,3 +129,5 @@
             max_size: 100m
           storage_driver: overlay2
           storage_opts: overlay2.override_kernel_check=true
+
+    - role: centos7_k8s
