@@ -1,5 +1,5 @@
 ---
-# tasks file for keepalived
+# tasks file for keepalived_k8s
 
 - name: Ensure latest version of keepalived is installed
   become: true

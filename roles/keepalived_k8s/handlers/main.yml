@@ -1,5 +1,5 @@
 ---
-# handlers file for keepalived
+# handlers file for keepalived_k8s
 
 - name: Restart keepalived
   become: true

@@ -1,5 +1,5 @@
 ---
-# defaults file for keepalived
+# defaults file for keepalived_k8s
 
 inventory_hostname_short_active_server: haproxy-0
 inventory_hostname_short_standby_server: haproxy-1
