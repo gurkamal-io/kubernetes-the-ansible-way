@@ -14,37 +14,39 @@
         ssh_from_public: true
         block_or_drop_unauthorized_connections: block
         kubernetes_sources:
-          - "10.0.0.10"
-          - "10.0.0.50"
-          - "10.0.0.51"
-          - "10.0.0.100"
-          - "10.0.0.101"
-          - "10.0.0.102"
-          - "10.0.0.200"
-          - "10.0.0.201"
-          - "10.0.0.202"
+          - 10.0.0.10
+          - 10.0.0.50
+          - 10.0.0.51
+          - 10.0.0.100
+          - 10.0.0.101
+          - 10.0.0.102
+          - 10.0.0.200
+          - 10.0.0.201
+          - 10.0.0.202
         ports_open_to_kubernetes:
-          - 6443/tcp # kube-apiserver
+          - 6443/tcp # Kubernetes API server
         ports_open_to_public:
-          - 80/tcp # http
-          - 443/tcp # https
+          - 80/tcp # nginx ingress controller http
+          - 443/tcp # nginx ingress controller https
         rich_rules_applied_to_kubernetes_traffic:
-          - rule protocol value="vrrp" accept
+          - rule protocol value="vrrp" accept # keepalived heartbeat
+
     - role: haproxy_k8s
       vars:
         load_balancers:
           - name: kube_apiserver
             listener_port: 6443
             target_port: 6443
-            target_group: "master_nodes"
+            target_group: master_nodes
           - name: ingress_controller_http
             listener_port: 80
             target_port: 30080
-            target_group: "worker_nodes"
+            target_group: worker_nodes
           - name: ingress_controller_https
             listener_port: 443
             target_port: 30443
-            target_group: "worker_nodes"
+            target_group: worker_nodes
+
     - role: keepalived_k8s
       vars:
         inventory_hostname_short_active_server: haproxy-0
@@ -63,15 +65,15 @@
         ssh_from_public: true
         block_or_drop_unauthorized_connections: block
         kubernetes_sources:
-          - "10.0.0.10"
-          - "10.0.0.50"
-          - "10.0.0.51"
-          - "10.0.0.100"
-          - "10.0.0.101"
-          - "10.0.0.102"
-          - "10.0.0.200"
-          - "10.0.0.201"
-          - "10.0.0.202"
+          - 10.0.0.10
+          - 10.0.0.50
+          - 10.0.0.51
+          - 10.0.0.100
+          - 10.0.0.101
+          - 10.0.0.102
+          - 10.0.0.200
+          - 10.0.0.201
+          - 10.0.0.202
         ports_open_to_kubernetes:
           # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#check-required-ports
           - 6443/tcp # Kubernetes API server
@@ -81,6 +83,16 @@
           - 10252/tcp # kube-controller-manager
 
     - role: docker
+      vars:
+        containerd_io_yum_package_version: 1.2.13
+        docker_ce_yum_package_version: 19.03.8
+        docker_daemon_options:
+          exec_opts: native.cgroupdriver=systemd
+          log_driver: json-file
+          log_opts:
+            max_size: 100m
+          storage_driver: overlay2
+          storage_opts: overlay2.override_kernel_check=true
 
 - name: Bootstrap worker nodes
   hosts: worker_nodes
@@ -90,18 +102,28 @@
         ssh_from_public: true
         block_or_drop_unauthorized_connections: block
         kubernetes_sources:
-          - "10.0.0.10"
-          - "10.0.0.50"
-          - "10.0.0.51"
-          - "10.0.0.100"
-          - "10.0.0.101"
-          - "10.0.0.102"
-          - "10.0.0.200"
-          - "10.0.0.201"
-          - "10.0.0.202"
+          - 10.0.0.10
+          - 10.0.0.50
+          - 10.0.0.51
+          - 10.0.0.100
+          - 10.0.0.101
+          - 10.0.0.102
+          - 10.0.0.200
+          - 10.0.0.201
+          - 10.0.0.202
         ports_open_to_kubernetes:
           # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#check-required-ports
           - 10250/tcp # Kubelet API
           - 30000-32767/tcp # NodePort Services
 
     - role: docker
+      vars:
+        containerd_io_yum_package_version: 1.2.13
+        docker_ce_yum_package_version: 19.03.8
+        docker_daemon_options:
+          exec_opts: native.cgroupdriver=systemd
+          log_driver: json-file
+          log_opts:
+            max_size: 100m
+          storage_driver: overlay2
+          storage_opts: overlay2.override_kernel_check=true
