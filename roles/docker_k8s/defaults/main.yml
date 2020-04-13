@@ -1,5 +1,5 @@
 ---
-# defaults file for docker
+# defaults file for docker_k8s
 
 # Must be exact package versions available to yum, ie:
 # containerd.io-1.2.13

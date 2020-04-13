@@ -1,5 +1,5 @@
 ---
-# tasks file for docker
+# tasks file for docker_k8s
 
 - name: Ensure required packages for docker-ce are installed
   become: true
