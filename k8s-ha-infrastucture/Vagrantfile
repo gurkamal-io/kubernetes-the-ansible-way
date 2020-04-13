@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
   ################################################################################
   # Cluster Architecture (Provisioned on Virtual Private Network 10.0.0.0/24)
   ################################################################################
-  # IP          |  Node    
+  # IP          |  Node        |  Purpose
   # --------------------------------------------------------------------------
   # 10.0.0.10   |  Virtual IP  |  HA Load Balancer (using keepalived)
   # 10.0.0.50   |  haproxy-0   |  Active Load Balancer for kubernetes
@@ -49,11 +49,18 @@ Vagrant.configure("2") do |config|
   # Load Balancer Endpoint
   LOAD_BALANCER_VIRTUAL_IP     = "#{SUBNET_PREFIX}.10" # Kubernetes Load Balancer
 
+  # Bastion & Ansible Controller Node
+  BASTION_NODE_HOSTNAME_PREFIX = "bastion-"
+  BASTION_NODE_SUBNET_SUFFIX   = 20 # 10.0.0.20 series
+  BASTION_NODE_COUNT           = 1
+  BASTION_NODE_MEMORY          = 1024 # atleast 512
+  BASTION_NODE_CPUS            = 1 # atleast 1
+
   # HAProxy Load Balancers
   HAPROXY_NODE_HOSTNAME_PREFIX = "haproxy-"
   HAPROXY_NODE_SUBNET_SUFFIX   = 50 # 10.0.0.50 series
   HAPROXY_NODE_COUNT           = 2 # HA load balancer by using a VIP with keepalived
-  HAPROXY_NODE_MEMORY          = 2048 # atleast 512
+  HAPROXY_NODE_MEMORY          = 1024 # atleast 512
   HAPROXY_NODE_CPUS            = 1 # atleast 1
 
   # Kubernetes Masters
@@ -61,7 +68,7 @@ Vagrant.configure("2") do |config|
   MASTER_NODE_SUBNET_SUFFIX    = 100 # 10.0.0.100 series
   MASTER_NODE_COUNT            = 3 # should an be odd number for etcd quorum
   MASTER_NODE_MEMORY           = 4096 # atleast 1024
-  MASTER_NODE_CPUS             = 1 # atleast 1
+  MASTER_NODE_CPUS             = 2 # atleast 1
 
   # Kubernetes Workers
   WORKER_NODE_HOSTNAME_PREFIX  = "worker-"
@@ -70,6 +77,29 @@ Vagrant.configure("2") do |config|
   WORKER_NODE_MEMORY           = 4096 # atleast 1024
   WORKER_NODE_CPUS             = 1 # atleast 1
 
+  ################################################################################
+  # Bastion(s) 
+  ################################################################################
+  (0...(BASTION_NODE_COUNT)).each do |i|
+    config.vm.define "#{BASTION_NODE_HOSTNAME_PREFIX}#{i}" do |haproxy_i|
+      haproxy_i.vm.box = VAGRANT_BOX
+      haproxy_i.vm.box_version = VAGRANT_BOX_VERSION
+      haproxy_i.vm.hostname = "#{BASTION_NODE_HOSTNAME_PREFIX}#{i}"
+      haproxy_i.vm.network "private_network",
+        ip: "#{SUBNET_PREFIX}.#{BASTION_NODE_SUBNET_SUFFIX + i}",
+        libvirt__network_name: VIRTUAL_NETWORK_NAME,
+        virtualbox__intnet: VIRTUAL_NETWORK_NAME
+      haproxy_i.vm.provider "libvirt" do |libvirt|
+        libvirt.qemu_use_session = false
+        libvirt.memory = BASTION_NODE_MEMORY
+        libvirt.cpus = BASTION_NODE_CPUS
+      end
+      haproxy_i.vm.provider "virtualbox" do |virtualbox|
+        virtualbox.memory = BASTION_NODE_MEMORY 
+        virtualbox.cpus = BASTION_NODE_CPUS
+      end
+    end
+  end
 
   ################################################################################
   # HAProxy Load Balancers (Active/Standby High Availability)
@@ -148,14 +178,15 @@ Vagrant.configure("2") do |config|
 
   ################################################################################
   # Enable Ansible SSH access -- Note: Vagrant runs scripts as root
-  ################################################################################
+  ################################################################################  
   $dns_and_ssh_for_ansible= <<-'SCRIPT'
     #!/bin/bash
-    PROVIDER="${1}";            VAGRANT_FILE_PATH="${2}";             SUBNET_PREFIX="${3}";
-    HAPROXY_NODE_COUNT="${4}";  HAPROXY_NODE_HOSTNAME_PREFIX="${5}";  HAPROXY_NODE_SUBNET_SUFFIX="${6}";
-    MASTER_NODE_COUNT="${7}";   MASTER_NODE_HOSTNAME_PREFIX="${8}";   MASTER_NODE_SUBNET_SUFFIX="${9}";
-    WORKER_NODE_COUNT="${10}";  WORKER_NODE_HOSTNAME_PREFIX="${11}";  WORKER_NODE_SUBNET_SUFFIX="${12}";
-    LOAD_BALANCER_VIRTUAL_IP="${13}"
+    PROVIDER="${1}";             VAGRANT_FILE_PATH="${2}";              SUBNET_PREFIX="${3}";
+    HAPROXY_NODE_COUNT="${4}";   HAPROXY_NODE_HOSTNAME_PREFIX="${5}";   HAPROXY_NODE_SUBNET_SUFFIX="${6}";
+    MASTER_NODE_COUNT="${7}";    MASTER_NODE_HOSTNAME_PREFIX="${8}";    MASTER_NODE_SUBNET_SUFFIX="${9}";
+    WORKER_NODE_COUNT="${10}";   WORKER_NODE_HOSTNAME_PREFIX="${11}";   WORKER_NODE_SUBNET_SUFFIX="${12}";
+    BASTION_NODE_COUNT="${13}";  BASTION_NODE_HOSTNAME_PREFIX="${14}";  BASTION_NODE_SUBNET_SUFFIX="${15}";
+    LOAD_BALANCER_VIRTUAL_IP="${16}"
     
     # yum packages that will also be provisioned
     readonly centos7_epel_rpm="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
@@ -193,7 +224,8 @@ Vagrant.configure("2") do |config|
         vagrant_key_exists="false"
 
         while [[ "${vagrant_key_exists}" == "false" ]]; do
-          echo "waiting for ${hostname_i}'s vagrant_ssh_key"
+          echo "waiting for ${hostname_i}'s vagrant_ssh_key..."
+          sleep 5
           if [[ -f "${vagrant_ssh_key}" ]]; then
             vagrant_key_exists="true" && \
             echo "${hostname_i}'s vagrant_ssh_key found"
@@ -211,9 +243,10 @@ Vagrant.configure("2") do |config|
       done
     }
 
-    bootstrap_node_type "${HAPROXY_NODE_COUNT}" "${HAPROXY_NODE_HOSTNAME_PREFIX}" "${HAPROXY_NODE_SUBNET_SUFFIX}"
-    bootstrap_node_type "${MASTER_NODE_COUNT}"  "${MASTER_NODE_HOSTNAME_PREFIX}"  "${MASTER_NODE_SUBNET_SUFFIX}"
-    bootstrap_node_type "${WORKER_NODE_COUNT}"  "${WORKER_NODE_HOSTNAME_PREFIX}"  "${WORKER_NODE_SUBNET_SUFFIX}"
+    bootstrap_node_type "${HAPROXY_NODE_COUNT}"  "${HAPROXY_NODE_HOSTNAME_PREFIX}"  "${HAPROXY_NODE_SUBNET_SUFFIX}"
+    bootstrap_node_type "${MASTER_NODE_COUNT}"   "${MASTER_NODE_HOSTNAME_PREFIX}"   "${MASTER_NODE_SUBNET_SUFFIX}"
+    bootstrap_node_type "${WORKER_NODE_COUNT}"   "${WORKER_NODE_HOSTNAME_PREFIX}"   "${WORKER_NODE_SUBNET_SUFFIX}"
+    bootstrap_node_type "${BASTION_NODE_COUNT}"  "${BASTION_NODE_HOSTNAME_PREFIX}"  "${BASTION_NODE_SUBNET_SUFFIX}"
     rm -rf "${VAGRANT_FILE_PATH}" && \
     echo "deleted ${VAGRANT_FILE_PATH}"
 
@@ -226,14 +259,18 @@ Vagrant.configure("2") do |config|
   SCRIPT
 
   config.vm.synced_folder "./", "/vagrant", disabled: true
-  config.vm.provision "file", source: ".vagrant", destination: VAGRANT_FILE_PATH
+  config.vm.provision "vagrant file provisioning buffer", type: "shell" do |s|
+    s.inline = "sleep 30" # sometimes vagrant tries to provision file before key is generated
+  end
+  config.vm.provision "file", source: "./.vagrant", destination: VAGRANT_FILE_PATH
   config.vm.provision "dns_and_ssh_for_ansible", type: "shell" do |s|
     s.inline = $dns_and_ssh_for_ansible
     s.args = [
-      PROVIDER,           VAGRANT_FILE_PATH,            SUBNET_PREFIX,
-      HAPROXY_NODE_COUNT, HAPROXY_NODE_HOSTNAME_PREFIX, HAPROXY_NODE_SUBNET_SUFFIX,
-      MASTER_NODE_COUNT,  MASTER_NODE_HOSTNAME_PREFIX,  MASTER_NODE_SUBNET_SUFFIX,
-      WORKER_NODE_COUNT,  WORKER_NODE_HOSTNAME_PREFIX,  WORKER_NODE_SUBNET_SUFFIX,
+      PROVIDER,            VAGRANT_FILE_PATH,             SUBNET_PREFIX,
+      HAPROXY_NODE_COUNT,  HAPROXY_NODE_HOSTNAME_PREFIX,  HAPROXY_NODE_SUBNET_SUFFIX,
+      MASTER_NODE_COUNT,   MASTER_NODE_HOSTNAME_PREFIX,   MASTER_NODE_SUBNET_SUFFIX,
+      WORKER_NODE_COUNT,   WORKER_NODE_HOSTNAME_PREFIX,   WORKER_NODE_SUBNET_SUFFIX,
+      BASTION_NODE_COUNT,  BASTION_NODE_HOSTNAME_PREFIX,  BASTION_NODE_SUBNET_SUFFIX,
       LOAD_BALANCER_VIRTUAL_IP   
     ]
   end
