@@ -2,7 +2,6 @@
 # tasks file for docker_k8s
 
 - name: Ensure required packages for docker-ce are installed
-  become: true
   yum:
     name: "{{ packages }}"
     state: latest
@@ -13,7 +12,6 @@
       - lvm2
 
 - name: Ensure docker-ce-stable repo is available to yum
-  become: true
   yum_repository:
     name: docker-ce-stable
     description: Docker CE Stable Repo
@@ -22,13 +20,11 @@
     gpgcheck: yes
 
 - name: Ensure containerd.io-{{ containerd_io_yum_package_version }} is installed
-  become: true
   yum:
     name: containerd.io-{{ containerd_io_yum_package_version }}
     state: latest
 
 - name: Ensure docker-ce-{{ docker_ce_yum_package_version }} and docker-ce-cli-{{ docker_ce_yum_package_version }} are installed
-  become: true
   yum:
     name: "{{ packages }}"
     state: latest
@@ -40,7 +36,6 @@
     - Restart docker
 
 - name: Ensure /etc/docker directory exists
-  become: true
   file:
     path: /etc/docker
     state: directory
@@ -49,7 +44,6 @@
     - Restart docker
 
 - name: Ensure docker daemon is configured for kubernetes at /etc/docker/daemon.json
-  become: true
   template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
@@ -60,7 +54,6 @@
     - Restart docker
 
 - name: Ensure docker is running
-  become: true
   systemd:
     name: docker
     state: started

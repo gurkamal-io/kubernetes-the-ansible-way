@@ -2,7 +2,6 @@
 # handlers file for firewalld_k8s
 
 - name: Restart firewalld
-  become: true
   systemd:
     name: firewalld
     state: restarted

@@ -2,13 +2,11 @@
 # tasks file for haproxy_k8s
 
 - name: Ensure the latest version of haproxy is installed
-  become: true
   yum:
     name: haproxy
     state: latest
 
 - name: Ensure required packages for ansible seboolean module are installed
-  become: true
   yum:
     name: "{{ packages }}"
     state: latest
@@ -18,7 +16,6 @@
       - libsemanage-python
 
 - name: Ensure seboolean haproxy_connect_any is on
-  become: true
   seboolean:
     name: haproxy_connect_any
     state: yes
@@ -27,7 +24,6 @@
     - Restart haproxy
 
 - name: Ensure IP forwarding is on
-  become: true
   sysctl:
     name: net.ipv4.ip_forward
     value: "1"
@@ -38,7 +34,6 @@
     - Restart haproxy
 
 - name: Ensure IP nonlocal binding is on
-  become: true
   sysctl:
     name: net.ipv4.ip_nonlocal_bind
     value: "1"
@@ -49,7 +44,6 @@
     - Restart haproxy
 
 - name: Ensure haproxy is configured in /etc/haproxy/haproxy.cfg
-  become: true
   template:
     src: haproxy.cfg.j2
     dest: /etc/haproxy/haproxy.cfg
@@ -60,7 +54,6 @@
     - Restart haproxy
 
 - name: Ensure haproxy is running
-  become: true
   systemd:
     name: haproxy
     state: started

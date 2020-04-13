@@ -2,13 +2,11 @@
 # tasks file for keepalived_k8s
 
 - name: Ensure latest version of keepalived is installed
-  become: true
   yum:
     name: keepalived
     state: latest
 
 - name: Ensure seboolean keepalived_connect_any is on
-  become: true
   seboolean:
     name: keepalived_connect_any
     state: yes
@@ -17,7 +15,6 @@
     - Restart keepalived
 
 - name: Ensure IP forwarding is on
-  become: true
   sysctl:
     name: net.ipv4.ip_forward
     value: "1"
@@ -28,7 +25,6 @@
     - Restart keepalived
 
 - name: Ensure IP nonlocal binding is on
-  become: true
   sysctl:
     name: net.ipv4.ip_nonlocal_bind
     value: "1"
@@ -39,7 +35,6 @@
     - Restart keepalived
 
 - name: Ensure the user 'keepalived_script' exists to monitor haproxy
-  become: true
   user:
     name: keepalived_script
     group: users
@@ -47,7 +42,6 @@
     - Restart keepalived
 
 - name: Ensure health check script is configured to monitor {{ process_to_monitor }}
-  become: true
   template:
     src: monitor_health.sh.j2
     dest: /usr/libexec/keepalived/monitor_health.sh
@@ -58,7 +52,6 @@
     - Restart keepalived
 
 - name: Ensure keepalived is configured on active server
-  become: true
   template:
     src: keepalived.active.conf.j2
     dest: /etc/keepalived/keepalived.conf
@@ -70,7 +63,6 @@
     - Restart keepalived
 
 - name: Ensure keepalived is configured on standby server
-  become: true
   template:
     src: keepalived.standby.conf.j2
     dest: /etc/keepalived/keepalived.conf
@@ -82,7 +74,6 @@
     - Restart keepalived
 
 - name: Ensure keepalived is started
-  become: true
   systemd:
     name: keepalived
     state: started

@@ -2,7 +2,6 @@
 # handlers file for keepalived_k8s
 
 - name: Restart keepalived
-  become: true
   systemd:
     name: keepalived
     state: restarted

@@ -2,27 +2,95 @@
 # tasks file for firewalld_k8s
 
 - name: Ensure latest version of firewalld is installed
-  become: true
   yum:
     name: firewalld
     state: latest
 
 - name: Ensure firewalld is running
-  become: true
   systemd:
     name: firewalld
     state: started
     enabled: yes
 
 - name: Register current default zone for firewalld
-  become: true
   command: firewall-cmd --get-default-zone
   register: get_default_zone_response
+
+- name: Ensure public zone is configured
+  block:
+    - name: Ensure public zone is present in firewalld
+      firewalld:
+        state: present
+        zone: public
+        permanent: yes
+      notify:
+        - Restart firewalld
+
+    - name: Ensure dhcpv6-client service is open to public traffic in public zone
+      firewalld:
+        service: dhcpv6-client
+        state: enabled
+        zone: public
+        permanent: yes
+        immediate: yes
+      notify:
+        - Restart firewalld
+
+    - name: If enabled, ensure ssh service is open to public traffic in public zone
+      firewalld:
+        service: ssh
+        state: enabled
+        zone: public
+        permanent: yes
+        immediate: yes
+      when: ssh_from_public
+      notify:
+        - Restart firewalld
+
+    - name: If disabled, ensure ssh service is closed to public traffic in public zone
+      firewalld:
+        service: ssh
+        state: disabled
+        zone: public
+        permanent: yes
+        immediate: yes
+      when: not ssh_from_public
+      notify:
+        - Restart firewalld
+
+    - name: Ensure desired ports are open to public traffic in public zone
+      firewalld:
+        port: "{{ item }}"
+        state: enabled
+        zone: public
+        permanent: yes
+        immediate: yes
+      loop: "{{ ports_open_to_public }}"
+      when: ports_open_to_public | length > 0
+      notify:
+        - Restart firewalld
+
+    - name: Ensure desired rich-rules are applied to public traffic in public zone
+      firewalld:
+        rich_rule: "{{ item }}"
+        state: enabled
+        zone: public
+        permanent: yes
+        immediate: yes
+      loop: "{{ rich_rules_applied_to_public_traffic }}"
+      when: rich_rules_applied_to_public_traffic | length > 0
+      notify:
+        - Restart firewalld
+
+    - name: Ensure public zone is the default zone for all non-kubernetes traffic
+      command: firewall-cmd --set-default-zone=public
+      when: get_default_zone_response.stdout != "public"
+      notify:
+        - Restart firewalld
 
 - name: Ensure internal zone is configured for kubernetes
   block:
     - name: Ensure internal zone is present in firewalld
-      become: true
       firewalld:
         state: present
         zone: internal
@@ -31,12 +99,12 @@
         - Restart firewalld
 
     - name: Ensure internal services are open to kubernetes traffic in internal zone
-      become: true
       firewalld:
         service: "{{ item }}"
         state: enabled
         zone: internal
         permanent: yes
+        immediate: yes
       loop:
         - nfs
         - ssh
@@ -47,121 +115,47 @@
         - Restart firewalld
 
     - name: Ensure desired ports are open to kubernetes traffic in internal zone
-      become: true
       firewalld:
         port: "{{ item }}"
         state: enabled
         zone: internal
         permanent: yes
+        immediate: yes
       loop: "{{ ports_open_to_kubernetes }}"
       when: ports_open_to_kubernetes | length > 0
       notify:
         - Restart firewalld
 
     - name: Ensure desired rich-rules are applied to kubernetes traffic in internal zone
-      become: true
       firewalld:
         rich_rule: "{{ item }}"
         state: enabled
         zone: internal
         permanent: yes
+        immediate: yes
       loop: "{{ rich_rules_applied_to_kubernetes_traffic }}"
       when: rich_rules_applied_to_kubernetes_traffic | length > 0
       notify:
         - Restart firewalld
 
-    # - name: Ensure masquerade is applied to kubernetes traffic in internal zone
-    #   become: true
-    #   firewalld:
-    #     masquerade: yes
-    #     state: enabled
-    #     zone: internal
-    #     permanent: yes
-    #   notify:
-    #     - Restart firewalld
+    - name: Ensure masquerade is applied to kubernetes traffic in internal zone
+      firewalld:
+        masquerade: "yes"
+        state: enabled
+        zone: internal
+        permanent: yes
+        immediate: yes
+      notify:
+        - Restart firewalld
 
     - name: Ensure kubernetes sources are bound to internal zone
-      become: true
       firewalld:
         source: "{{ item }}"
         state: enabled
         zone: internal
         permanent: yes
+        immediate: yes
       loop: "{{ kubernetes_sources }}"
       when: kubernetes_sources | length > 0
-      notify:
-        - Restart firewalld
-
-- name: Ensure public zone is configured
-  block:
-    - name: Ensure public zone is present in firewalld
-      become: true
-      firewalld:
-        state: present
-        zone: public
-        permanent: yes
-      notify:
-        - Restart firewalld
-
-    - name: Ensure dhcpv6-client service is open to public traffic in public zone
-      become: true
-      firewalld:
-        service: dhcpv6-client
-        state: enabled
-        zone: public
-        permanent: yes
-      notify:
-        - Restart firewalld
-
-    - name: If enabled, ensure ssh service is open to public traffic in public zone
-      become: true
-      firewalld:
-        service: ssh
-        state: enabled
-        zone: public
-        permanent: yes
-      when: ssh_from_public
-      notify:
-        - Restart firewalld
-
-    - name: If disabled, ensure ssh service is closed to public traffic in public zone
-      become: true
-      firewalld:
-        service: ssh
-        state: disabled
-        zone: public
-        permanent: yes
-      when: not ssh_from_public
-      notify:
-        - Restart firewalld
-
-    - name: Ensure desired ports are open to public traffic in public zone
-      become: true
-      firewalld:
-        port: "{{ item }}"
-        state: enabled
-        zone: public
-        permanent: yes
-      loop: "{{ ports_open_to_public }}"
-      when: ports_open_to_public | length > 0
-      notify:
-        - Restart firewalld
-
-    - name: Ensure desired rich-rules are applied to public traffic in public zone
-      become: true
-      firewalld:
-        rich_rule: "{{ item }}"
-        state: enabled
-        zone: public
-        permanent: yes
-      loop: "{{ rich_rules_applied_to_public_traffic }}"
-      when: rich_rules_applied_to_public_traffic | length > 0
-      notify:
-        - Restart firewalld
-
-    - name: Ensure public zone is the default zone for all non-kubernetes traffic
-      become: true
-      command: firewall-cmd --set-default-zone=public
-      when: get_default_zone_response.stdout != "public"
       notify:
         - Restart firewalld
